@@ -1,0 +1,162 @@
+/* Css page specifically for login and register, will probably be the page for others as well*/
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: #0b1220;
+    color: #f1f5f9;
+    font-family: Arial, Helvetica, sans-serif;
+}
+/* nav bar */
+nav {
+    background-color: #172337;
+    padding: 18px 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+nav a {
+    color: #f1f5f9;
+    text-decoration: none;
+    font-weight: 500;
+}
+nav a:hover {
+    color: #60a5fa;
+}
+/* headings */
+h2 {
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 25px;
+    font-size: 30px;
+}
+
+/* form colors and input sections */
+form {
+    background-color: #172337;
+    width: 90%;
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 35px;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+form input [type="text"],
+form input [type="email"],
+form input [type="password"] {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 15px;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    background-color: #0f172a;
+    color: white;
+    font-size: 15px;
+}
+
+form input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+form button[type="submit"],
+form input[type="submit"] {
+    width: 100%;
+    padding: 13px;
+    margin-top: 10px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+form button[type="submit"]:hover,
+form input[type="submit"]:hover {
+    background-color: #1d4ed8;
+}
+
+/* page nav text */
+body > p {
+    text-align: center;
+    margin-top: 22px;
+    color: #94a3b8;
+}
+
+body > p a:hover {
+    text-decoration: underline;
+}
+
+/* php messages */
+.danger,
+.success {
+    width: 90%;
+    max-width: 420px;
+    margin: 20px auto;
+    padding: 14px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.danger {
+    background-color: #450a0a;
+    color: #fca5a5;
+    border: 1px solid #991b1b;
+}
+
+.success {
+    background-color: #052e16;
+    color: #86efac;
+    border: 1px solid #166534;
+}
+
+/*js messages*/
+#error-message:empty {
+    display: none;
+}
+
+/*Responsive design media stuff */
+
+@media (max-width: 600px) {
+    nav {
+        padding: 15px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    h2 {
+        margin-top: 35px;
+        font-size: 26px;
+    }
+    form {
+        padding: 25px 20px;
+        width: 92%;
+    }
+
+    .danger,
+    .success {
+        width: 92%;
+    }
+}
