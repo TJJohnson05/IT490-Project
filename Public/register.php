@@ -199,7 +199,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     isValid = false;
                 }
 
-                if (!password !== confirmPassword) {
+                if (password !== confirmPassword) {
                     flash("Passwords do not match.", "danger");
                     isValid = false;
                 }
