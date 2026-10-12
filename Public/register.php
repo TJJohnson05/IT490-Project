@@ -101,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     name="username"
                     required 
                     minlength="3"
-                    maxlength="'30"
+                    maxlength="30"
                     value="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>"
                 />
             </div>
@@ -138,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <div>
                 <label for = "confirm_password">Confirm Password:</label>
                 <input
-                    type="passwrord"
+                    type="password"
                     id="confirm_password"
                     name="confirm_password"
                     required
