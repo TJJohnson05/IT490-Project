@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../rabbitMQLib.inc";
 //empty variables for registration vibes 
 $username = "";
 $email = "";
@@ -65,8 +66,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         //Backend needs to check whetehr or not username and email already exist 
         //Backend needs to hash and store password in the database
 
-        $message = "Validation successful. Registration is not connected yet.";
-        $messageType = "success";
+        try {
+            $client = new rabbitMQClient (
+                __DIR__ . "/../testRabbitMQ.ini",
+                "testServer"
+            );
+
+            $request = [
+                "type" => "register",
+                "username" => $username,
+                "email" => $email,
+                "password" => $password
+            ];
+
+            $response = $client->send_request($request);
+
+            if ($response === true || $response === 1) {
+                $message = "RabbitMQ registration request completed successfully.";
+                $messageType = "success";
+            } else {
+                $message = "RabbitMQ registration was rejected by the backend.";
+                $messageType = "danger";
+            }
+            
+        } catch (Throwable $e) {
+            error_log("RabbitMQ registration error: " . $e->getMessage());
+
+            $message = "Could not make contact with registration services.";
+            $messageType = "danger";
+        }
     }
 } 
 ?>
