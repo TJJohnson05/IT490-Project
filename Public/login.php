@@ -1,5 +1,7 @@
 
 <?php
+require_once __DIR__ . "/../rabbitMQLib.inc";
+
 $email = "";
 $message = "";
 $messageType = "";
@@ -41,12 +43,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $messageType = "danger";
         $hasError = true;
     }
-
+    //Rabbit mq stuff 
     if (!$hasError) {
 
-        // Need to connect to RabbitMQ authentication later
-        $message = "Validation successful. Authentication is not connected yet.";
-        $messageType = "success";
+        try {
+            //connection to rabbitmq 
+            $client = new rabbitMQClient(
+                __DIR__ . "/../testRabbitMQ.ini",
+                "testServer"
+            );
+
+            //login
+            $request = [
+                "type" => "login",
+                "username" => $email,
+                "password" => $password
+            ];
+            //request needing backend response
+            $response = $client->send_request($request);
+
+            if ($response === true || $response === 1) {
+                $message = "RabbitMQ login request completed successfully.";
+                $messageType = "success";
+            } else {
+                $message = "Login request was rejected by the backend.";
+                $messageType = "danger";
+            } 
+        } catch (Throwable $e) {
+            error_log("RabbitMQ login error: " . $e->getMessage());
+            $message = "Unable to contact the authentication serivce.";
+            $messageType = "danger";
+        }
     }
 }
 ?>
