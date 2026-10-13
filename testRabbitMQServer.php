@@ -12,6 +12,13 @@ function doLogin($username,$password)
     //return false if not valid
 }
 
+function doRegister($username, $email, $password)
+{
+  echo "registration request recieved." . PHP_EOL;
+  echo "Username: " . $username . PHP_EOL; 
+  echo "Email: " . $email . PHP_EOL;
+}
+
 function requestProcessor($request)
 {
   echo "received request".PHP_EOL;
@@ -24,6 +31,12 @@ function requestProcessor($request)
   {
     case "login":
       return doLogin($request['username'],$request['password']);
+    case "register":
+      return doRegister(
+            $request['username'],
+            $request['email'],
+            $request['password']
+      ); 
     case "validate_session":
       return doValidate($request['sessionId']);
   }
