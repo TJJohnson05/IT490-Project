@@ -27,19 +27,40 @@ function requestProcessor($request)
   {
     return "ERROR: unsupported message type";
   }
-  switch ($request['type'])
-  {
-    case "login":
-      return doLogin($request['username'],$request['password']);
-    case "register":
-      return doRegister(
-            $request['username'],
-            $request['email'],
-            $request['password']
-      ); 
-    case "validate_session":
-      return doValidate($request['sessionId']);
+  
+  switch ($request["type"]) {
+      case "login":
+          if (!isset($request["username"], $request["password"])) {
+              return false;
+          }
+
+          return doLogin(
+              $request["username"],
+              $request["password"]
+          );
+
+      case "register":
+          if (!isset(
+              $request["username"],
+              $request["email"],
+              $request["password"]
+          )) {
+              return false;
+          }
+
+          return doRegister(
+              $request["username"],
+              $request["email"],
+              $request["password"]
+          );
+
+      case "validate_session":
+          return false;
+
+      default:
+          return false;
   }
+
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }
 
