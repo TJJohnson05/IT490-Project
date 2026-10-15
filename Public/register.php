@@ -82,12 +82,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $response = $client->send_request($request);
 
             if ($response === true || $response === 1) {
-                $message = "RabbitMQ registration request completed successfully.";
+
+                $message = "Account created successfully! You can now log in.";
                 $messageType = "success";
-            } else {
-                $message = "RabbitMQ registration was rejected by the backend.";
+                
+                $username = "";
+                $email = "";
+                
+                } else {
+                
+                $message = "Registration failed. Username or email may already exist, or the submitted information is invalid.";
                 $messageType = "danger";
-            }
+                }
             
         } catch (Throwable $e) {
             error_log("RabbitMQ registration error: " . $e->getMessage());

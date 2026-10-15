@@ -1,5 +1,6 @@
 
 <?php
+session_start();
 require_once __DIR__ . "/../rabbitMQLib.inc";
 
 $email = "";
@@ -63,12 +64,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $response = $client->send_request($request);
 
             if ($response === true || $response === 1) {
-                $message = "RabbitMQ login request completed successfully.";
-                $messageType = "success";
+
+                // Create a fresh session ID after successful login.
+                session_regenerate_id(true);
+            
+                // Mark this browser session as authenticated.
+                $_SESSION["logged_in"] = true;
+                $_SESSION["login_name"] = $email;
+            
+                // Redirect to dashboard.
+                header("Location: Dashboard.php");
+                exit;
+            
             } else {
-                $message = "Login request was rejected by the backend.";
+            
+                $message = "Invalid username/email or password.";
                 $messageType = "danger";
-            } 
+            }
         } catch (Throwable $e) {
             error_log("RabbitMQ login error: " . $e->getMessage());
             $message = "Unable to contact the authentication serivce.";
