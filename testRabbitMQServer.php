@@ -4,29 +4,81 @@ require_once('path.inc');
 require_once('get_host_info.inc');
 require_once('rabbitMQLib.inc');
 
+function sentDatabaseRequest($request) {
+    try {
+        $client = new rabbitMQClient (
+            "testRabbitMQDatabase.ini",
+            "databaseServer"
+        );
+
+        return $client->send_request($request);
+
+    }   catch (Throwable $e) {
+        error_log("Database RabbitMQ error: " . $e->getMessage());
+        return false;
+    }
+}
+
 function doLogin($username,$password)
 {
-    // lookup username in databas
-    // check password
-    return true;
-    //return false if not valid
+    echo "Processing login request..." . PHP_EOL;
+
+    if(empty($username) || empty($password)) {
+        return false;
+    }
+
+    $request = [
+        "type" => "login",
+        "username" => $username,
+        "password" => $password
+    ];
+    
+    //Send request to db vm 
+    $response = sentDatabaseRequest($request);
+    return $response === true;
 }
 
 function doRegister($username, $email, $password)
 {
   echo "registration request recieved." . PHP_EOL;
-  echo "Username: " . $username . PHP_EOL; 
-  echo "Email: " . $email . PHP_EOL;
+
+  $username = trim($username);
+  $email = trim($email);
+
+  if (
+    empty($username) ||
+    empty($email) ||
+    empty($password)
+  ) {
+    return false;
+  }
+
+  if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    return false;
+  }
+
+  $request = [
+    "type" => "register",
+    "username" => $username,
+    "email" => $email,
+    "password" => $password
+  ];
+
+  //Send registration request to DB VM
+  $response = sentDatabaseRequest($request);
+
+  return $response === true;
 }
 
 function requestProcessor($request)
 {
-  echo "received request".PHP_EOL;
-  var_dump($request);
-  if(!isset($request['type']))
-  {
-    return "ERROR: unsupported message type";
+  echo "received request from frontend" . PHP_EOL;
+
+  //should not return whole array cause of passwords, even if password is hashed, we wanna avoid this 
+  if (!is_array($request) || !isset($request['type'])) {
+    return false;
   }
+
   
   switch ($request["type"]) {
       case "login":
@@ -54,16 +106,24 @@ function requestProcessor($request)
               $request["password"]
           );
 
+      case "test_database";
+          return sentDatabaseRequest([
+            "type" => "test_database"
+          ]);
+
       case "validate_session":
           return false;
 
       default:
+          echo "Unknown request type" . PHP_EOL;
           return false;
+        
   }
 
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }
 
+//backend is listening for frontend requests 
 $server = new rabbitMQServer("testRabbitMQ.ini","testServer");
 
 echo "testRabbitMQServer BEGIN".PHP_EOL;
