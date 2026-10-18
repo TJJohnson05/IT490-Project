@@ -15,7 +15,7 @@ function doLogin($username,$password)
     $pdo = getDatabaseConnection();
     echo "Connected to MySQL db." . PHP_EOL;
     
-    $stmt = $pdo->query("SELECT * FROM DATABASE() AS db_name WHERE username = '$username' AND password = '$password'");
+    $stmt = $pdo->query("SELECT * FROM users WHERE username = '$username' AND password = '$password'");
     $result = $stmt->fetch();
     echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
     
@@ -40,7 +40,7 @@ function doRegister($username, $email, $password)
     $pdo = getDatabaseConnection();
     echo "Connected to MySQL db." . PHP_EOL;
     
-    $query = "INSERT INTO DATABASE() AS db_name (username, email, password_hash) VALUES ('$username', '$email', '$password');"
+    $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password');"
     $stmt = $pdo->query($query);
     $result = $stmt->fetch();
     echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
