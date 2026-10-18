@@ -34,6 +34,24 @@ function doRegister($username, $email, $password)
   echo "registration request received." . PHP_EOL;
   echo "Username: " . $username . PHP_EOL; 
   echo "Email: " . $email . PHP_EOL;
+  
+  try
+    {
+    $pdo = getDatabaseConnection();
+    echo "Connected to MySQL db." . PHP_EOL;
+    
+    $query = "INSERT INTO DATABASE() AS db_name (username, email, password_hash) VALUES ('$username', '$email', '$password');"
+    $stmt = $pdo->query($query);
+    $result = $stmt->fetch();
+    echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
+    
+    return true;
+    
+    } catch (PDOException $e) {
+    error_log("Database connection error: " . $e->getMessage());
+    
+    echo "Failed to connect to MYSQL" . PHP_EOL;
+    return false;
 }
 
 function requestProcessor($request)
