@@ -15,12 +15,25 @@ function doLogin($username,$password)
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
 
-        $stmt = $pdo->query("SELECT * FROM users WHERE username = '$username' AND password = '$password'");
-        $result = $stmt->fetch();
-        echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
+        $query = "SELECT * FROM users WHERE username = '$username' AND password_hash = '$password'";
+        $stmt = $pdo->query($query);
+        $result = $stmt->execute();
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
-        return true;
-    
+        $queryCount= "SELECT COUNT(*) FROM users WHERE username = '$username' AND password_hash = '$password'";
+        $stmtCount = $pdo->query($queryCount);
+        $resultCount = $stmtCount->fetchColumn();
+        echo "Made it past the resultcount";
+
+        if ($resultCount == 0){
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+
+
     } catch (PDOException $e) {
         error_log("Database connection error: " . $e->getMessage());
 
@@ -44,7 +57,7 @@ function doRegister($username, $email, $password)
         $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password')";
         $stmt = $pdo->query($query);
         $result = $stmt->fetch();
-        echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
         return true;
     
