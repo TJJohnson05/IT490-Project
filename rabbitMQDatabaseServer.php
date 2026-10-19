@@ -12,46 +12,48 @@ function doLogin($username,$password)
     // check password
     try
     {
-    $pdo = getDatabaseConnection();
-    echo "Connected to MySQL db." . PHP_EOL;
-    
-    $stmt = $pdo->query("SELECT * FROM users WHERE username = '$username' AND password = '$password'");
-    $result = $stmt->fetch();
-    echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
-    
-    return true;
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+
+        $stmt = $pdo->query("SELECT * FROM users WHERE username = '$username' AND password = '$password'");
+        $result = $stmt->fetch();
+        echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
+
+        return true;
     
     } catch (PDOException $e) {
-    error_log("Database connection error: " . $e->getMessage());
-    
-    echo "Failed to connect to MYSQL" . PHP_EOL;
-    return false;
-    //return false if not valid
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
 }
 
 function doRegister($username, $email, $password)
 {
-  echo "registration request received." . PHP_EOL;
-  echo "Username: " . $username . PHP_EOL; 
-  echo "Email: " . $email . PHP_EOL;
+    echo "registration request received." . PHP_EOL;
+    echo "Username: " . $username . PHP_EOL;
+    echo "Email: " . $email . PHP_EOL;
   
-  try
+    try
     {
-    $pdo = getDatabaseConnection();
-    echo "Connected to MySQL db." . PHP_EOL;
-    
-    $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password');"
-    $stmt = $pdo->query($query);
-    $result = $stmt->fetch();
-    echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
-    
-    return true;
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+
+        $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password')";
+        $stmt = $pdo->query($query);
+        $result = $stmt->fetch();
+        echo "The result of the query is: " . $result["db_name"] . PHP_EOL;
+
+        return true;
     
     } catch (PDOException $e) {
-    error_log("Database connection error: " . $e->getMessage());
-    
-    echo "Failed to connect to MYSQL" . PHP_EOL;
-    return false;
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+    }
 }
 
 function requestProcessor($request)
@@ -99,11 +101,11 @@ function requestProcessor($request)
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }
 
-$server = new rabbitMQServer("testRabbitMQ.ini","testServer");
+$server = new rabbitMQServer("databaseServer.ini","databaseServer");
 
-echo "testRabbitMQServer BEGIN".PHP_EOL;
+echo "databaseServer BEGIN".PHP_EOL;
 $server->process_requests('requestProcessor');
-echo "testRabbitMQServer END".PHP_EOL;
+echo "databaseServer END".PHP_EOL;
 exit();
 ?>
 
