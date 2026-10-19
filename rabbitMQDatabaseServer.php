@@ -14,23 +14,39 @@ function doLogin($username,$password)
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-
-        $query = "SELECT * FROM users WHERE username = '$username' AND password_hash = '$password'";
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $query = "SELECT * FROM users WHERE username = '$username' AND password_hash = '$password_hash'";
         $stmt = $pdo->query($query);
         $result = $stmt->execute();
         echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
-        $queryCount= "SELECT COUNT(*) FROM users WHERE username = '$username' AND password_hash = '$password'";
+        $queryCount= "SELECT COUNT(*) FROM users WHERE username = '$username'"; // AND password_hash = '$password_hash';
         $stmtCount = $pdo->query($queryCount);
         $resultCount = $stmtCount->fetchColumn();
         echo "Made it past the resultcount";
 
         if ($resultCount == 0){
+            echo "resultcount is 0";
             return false;
         }
         else
         {
-            return true;
+            echo "we are selecting password_hash";
+            $query2 = "SELECT password_hash FROM users WHERE username = '$username'";
+            $stmt2 = $pdo->query($query2);
+            $result2 = $stmt2->execute(array());
+            foreach ($result2 as $row)
+            {
+                echo "we are in foreach loop";
+                if (password_verify($password, $row['password_hash']))
+                {
+                    echo "Password verified!";
+                    return true;
+                }
+            }
+
+            echo "Invalid login.";
+            return false;
         }
 
 
@@ -53,10 +69,10 @@ function doRegister($username, $email, $password)
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-
-        $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password')";
-        $stmt = $pdo->query($query);
-        $result = $stmt->fetch();
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password_hash')";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute();
         echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
         return true;
