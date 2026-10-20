@@ -14,11 +14,12 @@ function doLogin($username,$password)
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $query = "SELECT * FROM users WHERE username = '$username' AND password_hash = '$password_hash'";
-        $stmt = $pdo->query($query);
-        $result = $stmt->execute();
-        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        // $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        // $query = "SELECT * FROM users WHERE username = '$username' AND password_hash = '$password_hash'";
+        // $stmt = $pdo->query($query);
+        // $result = $stmt->execute();
+        // echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
         $queryCount= "SELECT COUNT(*) FROM users WHERE username = '$username'"; // AND password_hash = '$password_hash';
         $stmtCount = $pdo->query($queryCount);
@@ -34,7 +35,7 @@ function doLogin($username,$password)
             echo "we are selecting password_hash";
             $query2 = "SELECT password_hash FROM users WHERE username = '$username'";
             $stmt2 = $pdo->query($query2);
-            $result2 = $stmt2->execute(array());
+            $result2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
             foreach ($result2 as $row)
             {
                 echo "we are in foreach loop";
