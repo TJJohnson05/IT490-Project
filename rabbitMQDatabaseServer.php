@@ -21,8 +21,9 @@ function doLogin($username,$password)
         // $result = $stmt->execute();
         // echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
-        $queryCount= "SELECT COUNT(*) FROM users WHERE username = '$username'"; // AND password_hash = '$password_hash';
-        $stmtCount = $pdo->query($queryCount);
+        $queryCount= "SELECT COUNT(*) FROM users WHERE username = ?"; // AND password_hash = '$password_hash';
+        $stmtCount = $pdo->prepare($queryCount);
+        $execCount = $stmtCount->execute([$username]);
         $resultCount = $stmtCount->fetchColumn();
         echo "Made it past the resultcount";
 
@@ -33,8 +34,9 @@ function doLogin($username,$password)
         else
         {
             echo "we are selecting password_hash";
-            $query2 = "SELECT password_hash FROM users WHERE username = '$username'";
-            $stmt2 = $pdo->query($query2);
+            $query2 = "SELECT password_hash FROM users WHERE username = ?";
+            $stmt2 = $pdo->prepare($query2);
+            $exec2 = $stmt2->execute([$username]);
             $result2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
             foreach ($result2 as $row)
             {
@@ -71,9 +73,9 @@ function doRegister($username, $email, $password)
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $query = "INSERT INTO users (username, email, password_hash) VALUES ('$username', '$email', '$password_hash')";
+        $query = "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)";
         $stmt = $pdo->prepare($query);
-        $result = $stmt->execute();
+        $result = $stmt->execute([$username, $email, $password_hash]);
         echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
         return true;
