@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $messageType = "danger";
         $hasError = true;
 
-    } elseif (!preg_match("/^[a-z0-9_-]{3,30}$/", $username)) {
+    } elseif (!preg_match("/^[a-zA-Z0-9_-]{3,30}$/", $username)) {
         $message = "Username must be 3-30 characters, lowercase, and contain only letters, numbers, underscores, or hyphens.";
         $messageType = "danger";
         $hasError = true;
@@ -210,7 +210,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 let isValid = true;
 
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const usernamePattern = /^[a-z0-9_-]{3,30}$/;
+                const usernamePattern = /^[a-zA-Z0-9_-]{3,30}$/;
 
                 //remove previous JS messages 
 
