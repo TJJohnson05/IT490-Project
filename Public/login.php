@@ -50,8 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             //connection to rabbitmq 
             $client = new rabbitMQClient(
-                __DIR__ . "/../testRabbitMQ.ini",
-                "testServer"
+                __DIR__ . "/../testRabbitMQDatabase.ini",
+                "databaseServer"
             );
 
             //login
