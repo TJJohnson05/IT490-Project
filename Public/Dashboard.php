@@ -1,14 +1,13 @@
 <?php
 session_start();
 
-if (empty($_SESSION["logged_in"])) {
+if (empty($_SESSION["logged_in"] ?? false) !== true) {
     header("Location: login.php");
     exit;
 }
-?>
 
-<!DOCTYPE html>
-<html lang="en">
+header("Cache-Control: no-store, private");
+?>
 
 <!DOCTYPE html>
 <html lang="en">
