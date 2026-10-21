@@ -67,9 +67,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         //Backend needs to hash and store password in the database
 
         try {
-            $client = new rabbitMQClient (
-                __DIR__ . "/../testRabbitMQ.ini",
-                "testServer"
+            $client = new rabbitMQClient(
+                __DIR__ . "/../testRabbitMQDatabase.ini",
+                "databaseServer"
             );
 
             $request = [
