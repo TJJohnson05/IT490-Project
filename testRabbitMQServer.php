@@ -35,6 +35,10 @@ function doLogin($username,$password)
     
     //Send request to db vm 
     $response = sentDatabaseRequest($request);
+    echo "Database login result: "
+    . ($response === true ? "SUCCESS" : "FAILED")
+    . PHP_EOL;
+
     return $response === true;
 }
 
@@ -66,7 +70,9 @@ function doRegister($username, $email, $password)
 
   //Send registration request to DB VM
   $response = sentDatabaseRequest($request);
-
+  echo "Database registration result: "
+    . ($response === true ? "SUCCESS" : "FAILED")
+    . PHP_EOL;
   return $response === true;
 }
 
