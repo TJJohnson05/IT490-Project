@@ -213,6 +213,7 @@ class rabbitMQClient
       $exchange->setName($this->exchange);
       $exchange->setType($this->exchange_type);
 
+	 $callback_queue = new AMQPQueue($channel);
      $callback_queue->setName($this->queue . "_response_" . $uid);
 	 $callback_queue->setFlags(AMQP_EXCLUSIVE | AMQP_AUTODELETE);
 	 $callback_queue->declareQueue();
