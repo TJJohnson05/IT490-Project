@@ -34,15 +34,17 @@ class rabbitMQServer
 		}
 		$this->exchange = $this->machine[$server]["EXCHANGE"];
 		$this->queue = $this->machine[$server]["QUEUE"];
+		$this->routing_key = $this->queue;
 	}
 
 	function process_message($msg)
 	{
 		// send the ack to clear the item from the queue
-		if ($msg->getRoutingKey() !== "*")
-    {
-      return;
-    }
+		if ($msg->getRoutingKey() !== $this->routing_key)
+	{
+    $this->conn_queue->ack($msg->getDeliveryTag());
+    return;
+	}
     $this->conn_queue->ack($msg->getDeliveryTag());
 		try
 		{
@@ -73,7 +75,7 @@ class rabbitMQServer
 
 			$conn_queue = new AMQPQueue($channel);
 			$conn_queue->setName($msg->getReplyTo());
-			$replykey = $this->routing_key.".response";
+			$replykey = $msg->getReplyTo();
 			$conn_queue->bind($exchange->getName(),$replykey);
 			$exchange->publish(json_encode($response),$replykey,AMQP_NOPARAM,array('correlation_id'=>$msg->getCorrelationId()));
 
@@ -166,6 +168,7 @@ class rabbitMQClient
 		}
 		$this->exchange = $this->machine[$server]["EXCHANGE"];
 		$this->queue = $this->machine[$server]["QUEUE"];
+		$this->routing_key = $this->queue;
 	}
 
 	function process_response($response)
@@ -210,10 +213,14 @@ class rabbitMQClient
       $exchange->setName($this->exchange);
       $exchange->setType($this->exchange_type);
 
-      $callback_queue = new AMQPQueue($channel);
-      $callback_queue->setName($this->queue."_response");
-      $callback_queue->declare();
-			$callback_queue->bind($exchange->getName(),$this->routing_key.".response");
+	 $callback_queue = new AMQPQueue($channel);
+     $callback_queue->setName($this->queue . "_response_" . $uid);
+	 $callback_queue->setFlags(AMQP_EXCLUSIVE | AMQP_AUTODELETE);
+	 $callback_queue->declareQueue();
+	 $callback_queue->bind(
+		$exchange->getName(),
+		$callback_queue->getName()
+		);
 
 			$this->conn_queue = new AMQPQueue($channel);
 			$this->conn_queue->setName($this->queue);
