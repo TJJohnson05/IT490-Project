@@ -21,7 +21,22 @@ header("Cache-Control: no-store, private");
     <!-- Web page configuration and responsive design -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
+<body>
+    <form class="search-bar" action="" method="GET" role="search">
+        <label for="search">Search</label>
 
+        <div class="search-row">
+            <input
+                type="search"
+                id="search"
+                name="q"
+                placeholder="Search..."
+            >
+
+            <button type="submit">Search</button>
+        </div>
+    </form>
+</body>
 <h2>
     <form action="logout.php" method="POST">
         <button type="submit">Logout</button>
