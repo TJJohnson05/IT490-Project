@@ -34,7 +34,7 @@ header("Cache-Control: no-store, private");
                 "UTF-8"
             );
             ?>!
-        </h2
+        </h2>
     </main>
 </body>
 </html>

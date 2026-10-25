@@ -20,18 +20,19 @@ nav {
 
 .nav-container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 25px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
     width: 100%;
 }
 
 .nav-links {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: 20px;
+    width: 100%;
 }
 
 nav a {
@@ -93,7 +94,6 @@ form input:focus {
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
-
 form button[type="submit"],
 form input[type="submit"] {
     width: 100%;
@@ -157,118 +157,131 @@ nav form button[type="submit"]:focus-visible {
 
 /* Page navigation text */
 body > p {
-    text-align: center;
-    margin-top: 22px;
-    color: #94a3b8;
+text-align: center;
+margin-top: 22px;
+color: #94a3b8;
 }
 
 body > p a:hover {
-    text-decoration: underline;
+text-decoration: underline;
 }
 
 /* PHP messages */
 .danger,
 .success {
-    width: 90%;
-    max-width: 420px;
-    margin: 20px auto;
-    padding: 14px;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 14px;
+width: 90%;
+max-width: 420px;
+margin: 20px auto;
+padding: 14px;
+border-radius: 6px;
+text-align: center;
+font-size: 14px;
 }
 
 .danger {
-    background-color: #450a0a;
-    color: #fca5a5;
-    border: 1px solid #991b1b;
+background-color: #450a0a;
+color: #fca5a5;
+border: 1px solid #991b1b;
 }
 
 .success {
-    background-color: #052e16;
-    color: #86efac;
-    border: 1px solid #166534;
+background-color: #052e16;
+color: #86efac;
+border: 1px solid #166534;
 }
 
 /* JavaScript messages */
 #error-message:empty {
-    display: none;
+display: none;
 }
 
 /* Search bar */
 form.search-bar {
-    width: 90%;
-    max-width: 600px;
-    margin: 25px auto;
-    padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    text-align: left;
+width: 90%;
+max-width: 600px;
+margin: 25px auto;
+padding: 0;
+background: transparent;
+border: none;
+box-shadow: none;
+text-align: left;
 }
 
 .search-row {
-    display: flex;
-    gap: 10px;
+display: flex;
+gap: 10px;
 }
 
 .search-row input[type="search"] {
-    flex: 1;
-    min-width: 0;
-    padding: 12px;
-    border: 1px solid #475569;
-    border-radius: 6px;
-    background-color: #0f172a;
-    color: white;
-    font-size: 16px;
+flex: 1;
+min-width: 0;
+padding: 12px;
+border: 1px solid #475569;
+border-radius: 6px;
+background-color: #0f172a;
+color: white;
+font-size: 16px;
 }
 
 .search-row button[type="submit"] {
-    width: auto;
-    margin: 0;
-    padding: 12px 20px;
+width: auto;
+margin: 0;
+padding: 12px 20px;
 }
 
 /* Responsive layout */
 @media (max-width: 600px) {
-    nav {
-        padding: 15px;
-    }
-
-    .nav-container {
-        gap: 15px;
-    }
-
-    .nav-links {
-        gap: 15px;
-    }
-
-    h2 {
-        margin-top: 35px;
-        font-size: 26px;
-    }
-
-    form {
-        padding: 25px 20px;
-        width: 92%;
-    }
-
-    /* Keep navigation forms compact on smaller screens */
-    nav form {
-        width: auto;
-        padding: 0;
-    }
-
-    .danger,
-    .success {
-        width: 92%;
-    }
-
-    .search-row {
-        flex-wrap: wrap;
-    }
-
-    .search-row input[type="search"] {
-        flex-basis: 180px;
-    }
+nav {
+    padding: 15px;
 }
+
+.nav-container {
+    gap: 15px;
+}
+
+.nav-links {
+    gap: 15px;
+}
+
+h2 {
+    margin-top: 35px;
+    font-size: 26px;
+}
+
+form {
+    padding: 25px 20px;
+    width: 92%;
+}
+
+/* Keep navigation forms compact on smaller screens */
+nav form {
+    width: auto;
+    padding: 0;
+}
+
+.danger,
+.success {
+    width: 92%;
+}
+
+.search-row {
+    flex-wrap: wrap;
+}
+
+.search-row input[type="search"] {
+    flex-basis: 180px;
+}
+}
+
+/* Profile sections reuse the existing dark form style. */
+.profile-page { padding-bottom: 40px; }
+form.profile-form { margin: 24px auto; }
+.profile-public-link { text-align: center; }
+.profile-page a { color: #93c5fd; }
+.profile-card {
+width: 90%; max-width: 600px; margin: 24px auto; padding: 24px;
+background: #172337; border: 1px solid #334155; border-radius: 12px;
+}
+/* Keep Logout on the far right even with the new profile link. */
+.nav-links { justify-content: flex-start; }
+.nav-links .nav-logout { margin-left: auto; }

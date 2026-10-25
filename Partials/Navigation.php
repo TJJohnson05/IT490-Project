@@ -28,6 +28,12 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
                     Dashboard
                 </a>
 
+                <a href="profile.php"
+                   class="<?php echo $currentPage === 'profile.php' ? 'active' : ''; ?>"
+                   <?php if ($currentPage === 'profile.php') echo 'aria-current="page"'; ?>>
+                    My Profile
+                </a>
+
                 <form action="logout.php" method="POST" class="nav-logout">
                     <button type="submit">Logout</button>
                 </form>

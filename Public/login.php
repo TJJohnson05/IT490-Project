@@ -68,6 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 session_regenerate_id(true);
             
                 // Mark this browser session as authenticated.
+                unset($_SESSION["profile_details"], $_SESSION["profile_csrf"]);
                 $_SESSION["logged_in"] = true;
                 $_SESSION["login_name"] = $email;
             
@@ -92,8 +93,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
+<head></head>
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login</title>
