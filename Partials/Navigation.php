@@ -28,10 +28,9 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
                     Dashboard
                 </a>
 
-                <form action="logout.php" method="POST">
+                <form action="logout.php" method="POST" class="nav-logout">
                     <button type="submit">Logout</button>
                 </form>
-
             <?php else: ?>
 
                 <a

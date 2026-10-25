@@ -23,6 +23,7 @@ header("Cache-Control: no-store, private");
 <body>
     <?php require __DIR__ . "/../Partials/Navigation.php"; ?>
 
+   
     <main>
         <h2>
             Welcome,

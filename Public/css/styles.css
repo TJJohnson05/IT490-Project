@@ -1,4 +1,4 @@
-/* Css page specifically for login and register, will probably be the page for others as well*/
+/* Shared styles for login, register, dashboard, and search */
 * {
     box-sizing: border-box;
 }
@@ -11,24 +11,41 @@ body {
     color: #f1f5f9;
     font-family: Arial, Helvetica, sans-serif;
 }
-/* nav bar */
+
+/* Navigation bar */
 nav {
     background-color: #172337;
     padding: 18px 30px;
+}
+
+.nav-container {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 25px;
+    width: 100%;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 nav a {
     color: #f1f5f9;
     text-decoration: none;
+    font-size: 16px;
     font-weight: 500;
 }
+
 nav a:hover {
     color: #60a5fa;
 }
-/* headings */
+
+/* Headings */
 h2 {
     text-align: center;
     margin-top: 60px;
@@ -36,7 +53,7 @@ h2 {
     font-size: 30px;
 }
 
-/* form colors and input sections */
+/* Forms */
 form {
     background-color: #172337;
     width: 90%;
@@ -57,9 +74,9 @@ form label {
     font-weight: bold;
 }
 
-form input [type="text"],
-form input [type="email"],
-form input [type="password"] {
+form input[type="text"],
+form input[type="email"],
+form input[type="password"] {
     display: block;
     width: 100%;
     padding: 12px 14px;
@@ -97,7 +114,48 @@ form input[type="submit"]:hover {
     background-color: #1d4ed8;
 }
 
-/* page nav text */
+/* Navigation logout form */
+nav form {
+    display: inline-flex;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Match Logout to the navigation links */
+nav form button[type="submit"] {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: #f1f5f9;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: normal;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+nav form button[type="submit"]:hover {
+    background: transparent;
+    color: #60a5fa;
+}
+
+nav a:focus-visible,
+nav form button[type="submit"]:focus-visible {
+    outline: 2px solid #60a5fa;
+    outline-offset: 4px;
+}
+
+/* Page navigation text */
 body > p {
     text-align: center;
     margin-top: 22px;
@@ -108,7 +166,7 @@ body > p a:hover {
     text-decoration: underline;
 }
 
-/* php messages */
+/* PHP messages */
 .danger,
 .success {
     width: 90%;
@@ -132,35 +190,12 @@ body > p a:hover {
     border: 1px solid #166534;
 }
 
-/*js messages*/
+/* JavaScript messages */
 #error-message:empty {
     display: none;
 }
 
-/*Responsive design media stuff */
-
-@media (max-width: 600px) {
-    nav {
-        padding: 15px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    
-    h2 {
-        margin-top: 35px;
-        font-size: 26px;
-    }
-    form {
-        padding: 25px 20px;
-        width: 92%;
-    }
-
-    .danger,
-    .success {
-        width: 92%;
-    }
-}
-
+/* Search bar */
 form.search-bar {
     width: 90%;
     max-width: 600px;
@@ -171,10 +206,12 @@ form.search-bar {
     box-shadow: none;
     text-align: left;
 }
+
 .search-row {
     display: flex;
     gap: 10px;
 }
+
 .search-row input[type="search"] {
     flex: 1;
     min-width: 0;
@@ -190,4 +227,48 @@ form.search-bar {
     width: auto;
     margin: 0;
     padding: 12px 20px;
+}
+
+/* Responsive layout */
+@media (max-width: 600px) {
+    nav {
+        padding: 15px;
+    }
+
+    .nav-container {
+        gap: 15px;
+    }
+
+    .nav-links {
+        gap: 15px;
+    }
+
+    h2 {
+        margin-top: 35px;
+        font-size: 26px;
+    }
+
+    form {
+        padding: 25px 20px;
+        width: 92%;
+    }
+
+    /* Keep navigation forms compact on smaller screens */
+    nav form {
+        width: auto;
+        padding: 0;
+    }
+
+    .danger,
+    .success {
+        width: 92%;
+    }
+
+    .search-row {
+        flex-wrap: wrap;
+    }
+
+    .search-row input[type="search"] {
+        flex-basis: 180px;
+    }
 }
