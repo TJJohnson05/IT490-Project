@@ -5,6 +5,7 @@ require_once('get_host_info.inc');
 require_once('rabbitMQLib.inc');
 
 require_once __DIR__ . "/database.php";
+require_once __DIR__ . "/profile_handlers.php";
 
 function doLogin($username,$password)
 {
@@ -129,6 +130,25 @@ function requestProcessor($request)
       default:
           return false;
   }
+  //New stuff added for profile implementation
+  if (
+    is_array($request)
+    && in_array(
+        $request["type"] ?? "",
+        [
+            "get_profile",
+            "update_profile",
+            "change_password",
+            "get_public_profile"
+        ],
+        true
+        )) 
+        {
+        return handleProfileRequest(
+            getDatabaseConnection(),
+            $request
+        );
+}
 
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }
