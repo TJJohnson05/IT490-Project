@@ -146,7 +146,7 @@ usort($filteredGames, function($a, $b) use ($sort) {
 
     <title>Browse Games</title>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 
     <style>
         /* Css styling, for the browser page specifically, regular stylesheet included above*/ 
