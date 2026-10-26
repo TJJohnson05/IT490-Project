@@ -151,54 +151,73 @@ usort($filteredGames, function($a, $b) use ($sort) {
     <style>
         /* Css styling, for the browser page specifically, regular stylesheet included above*/ 
         /* Some of the most annoying testing of all time */
+        /* May god help us all, this is annoying v2*/
 
         .browse-container {
             max-width: 1250px;
             margin: 40px auto;
-            padding: 0 20px;
+            padding: 0 24px 50px;
+            color: #dbeafe;
         }
 
-        .browse-header {
-            text-align: center;
-            margin-bottom: 35px;
+        .browse-container,
+        .browse-container * {
+            box-sizing: border-box;
         }
 
         .browse-header h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
+            color: #f1f5f9;
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 800;
         }
 
-        .browse-header p {
-            color: #777;
-            font-size: 16px;
+        .browse-header p,
+        .game-count {
+            color: #b6c6db;
         }
 
+        
         .browse-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: minmax(180px, 2fr) 1fr 1fr auto;
+            width: 100%;
+            max-width: none;
+            margin: 0 0 28px;
             padding: 20px;
-            background: #f5f5f5;
-            border-radius: 10px;
+            gap: 12px;
+            background: #142237;
+            border: 1px solid #34465e;
+            border-radius: 16px;
+            box-shadow: none;
         }
 
         .browse-filters input,
         .browse-filters select {
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 15px;
-            flex: 1;
-            min-width: 160px;
+            width: 100%;
+            min-width: 0;
+            margin: 0;
+            padding: 12px 14px;
+            background: #f8fafc;
+            color: #172554;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font: inherit;
+        }
+
+        .browse-filters input::placeholder {
+            color: #64748b;
         }
 
         .browse-filters button {
-            padding: 12px 25px;
+            width: auto;
+            margin: 0;
+            padding: 12px 24px;
             background: #2563eb;
-            color: white;
+            color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 9px;
+            font: inherit;
+            font-weight: 700;
             cursor: pointer;
         }
 
@@ -206,129 +225,172 @@ usort($filteredGames, function($a, $b) use ($sort) {
             background: #1d4ed8;
         }
 
-        .game-count {
-            margin-bottom: 20px;
-            color: #666;
-        }
-
+        /* Game cards */
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            align-items: stretch;
         }
 
         .game-card {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.2s ease;
             display: flex;
             flex-direction: column;
+            min-width: 0;
+            background: #f8fafc;
+            color: #172554;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .game-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
         }
 
         .game-cover {
-            height: 220px;
-            background: linear-gradient(135deg, #1e293b, #334155);
+            height: 190px;
+            padding: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
+            background: linear-gradient(135deg, #dbeafe, #c7d2fe);
+            color: #172554;
+            border-bottom: 1px solid #bdcdee;
+            font-size: 27px;
+            font-weight: 800;
+            line-height: 1.25;
             text-align: center;
-            padding: 20px;
+            overflow-wrap: anywhere;
+        }
+
+        .game-cover:has(img) {
+            padding: 0;
         }
 
         .game-cover img {
+            display: block;
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
+        /* Details below the cover */
         .game-info {
-            padding: 20px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            padding: 22px;
+            background: #f8fafc;
         }
 
         .game-info h3 {
-            margin: 0 0 10px;
-            font-size: 21px;
+            margin: 0 0 12px;
+            color: #172554;
+            font-size: 23px;
+            font-weight: 800;
+            line-height: 1.3;
+            text-shadow: none;
         }
 
         .game-genre {
-            color: #2563eb;
-            font-weight: bold;
-            margin-bottom: 10px;
+            align-self: flex-start;
+            margin-bottom: 16px;
+            padding: 5px 11px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .game-description {
-            color: #555;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 15px;
             flex-grow: 1;
+            margin: 0 0 18px;
+            color: #475569;
+            font-size: 14px;
+            line-height: 1.7;
         }
 
         .game-release {
-            font-size: 13px;
-            color: #777;
-            margin-bottom: 15px;
+            margin: 0 0 18px;
+            color: #526176;
+            font-size: 12px;
         }
 
         .game-actions {
             display: flex;
             gap: 10px;
+            margin-top: auto;
         }
 
         .game-actions a,
         .game-actions button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             flex: 1;
-            padding: 10px;
-            border-radius: 6px;
+            min-width: 0;
+            margin: 0;
+            padding: 11px 8px;
+            border-radius: 9px;
+            font: inherit;
             font-size: 13px;
+            font-weight: 700;
             text-align: center;
+            text-decoration: none;
         }
 
         .details-btn {
             background: #2563eb;
-            color: white;
-            text-decoration: none;
+            color: #fff;
         }
 
-        .watchlist-btn {
-            background: #e5e7eb;
-            border: none;
-            color: #777;
+        .details-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .watchlist-btn:disabled {
+            background: #e2e8f0;
+            color: #526176;
+            border: 1px solid #cbd5e1;
+            opacity: 1;
             cursor: not-allowed;
         }
 
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: #777;
+        .no-results,
+        .no-results h2,
+        .no-results p {
+            color: #cbd5e1;
+        }
+
+        .browse-container:is(input, select, button, a):focus-visible {
+            outline: 3px solid #60a5fa;
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 900px) {
+            .browse-container .browse-filters {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         @media (max-width: 600px) {
-            .browse-header h1 {
-                font-size: 28px;
-            }
-
-            .browse-filters {
-                flex-direction: column;
-            }
-
-            .browse-filters input,
-            .browse-filters select,
             .browse-filters button {
                 width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .browse-container .game-card {
+                transition: none;
+            }
+
+            .game-card:hover {
+                transform: none;
             }
         }
     </style>
