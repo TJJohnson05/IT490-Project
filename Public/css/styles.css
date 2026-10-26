@@ -268,7 +268,7 @@ nav form {
     flex-wrap: wrap;
 }
 
-<<<<<<< HEAD
+
 .search-row input[type="search"] {
     flex-basis: 180px;
 }
@@ -286,9 +286,3 @@ background: #172337; border: 1px solid #334155; border-radius: 12px;
 /* Keep Logout on the far right even with the new profile link. */
 .nav-links { justify-content: flex-start; }
 .nav-links .nav-logout { margin-left: auto; }
-=======
-    .search-row input[type="search"] {
-        flex-basis: 180px;
-    }
-}
->>>>>>> 9eca83db555997cc124dfb8226016d1e31fd44c6
