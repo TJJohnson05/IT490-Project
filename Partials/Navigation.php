@@ -23,8 +23,7 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
                 <a
                     href="Dashboard.php"
                     class="<?php echo $currentPage === 'Dashboard.php' ? 'active' : ''; ?>"
-                    <?php if ($currentPage === 'Dashboard.php') echo 'aria-current="page"'; ?>
-                >
+                    <?php if ($currentPage === 'Dashboard.php') echo 'aria-current="page"'; ?>>
                     Dashboard
                 </a>
 
@@ -32,6 +31,12 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
                    class="<?php echo $currentPage === 'profile.php' ? 'active' : ''; ?>"
                    <?php if ($currentPage === 'profile.php') echo 'aria-current="page"'; ?>>
                     My Profile
+                </a>
+
+                <a href="browse.php"
+                    class="<?php echo $currentPage === 'browse.php' ? 'active' : ''; ?>">
+                    <?php if ($currentPage === 'browse.php') echo 'aria-current="page"'; ?>>
+                    Browse Games
                 </a>
 
                 <form action="logout.php" method="POST" class="nav-logout">
@@ -42,16 +47,14 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
                 <a
                     href="login.php"
                     class="<?php echo $currentPage === 'login.php' ? 'active' : ''; ?>"
-                    <?php if ($currentPage === 'login.php') echo 'aria-current="page"'; ?>
-                >
+                    <?php if ($currentPage === 'login.php') echo 'aria-current="page"'; ?>>
                     Login
                 </a>
 
                 <a
                     href="register.php"
                     class="<?php echo $currentPage === 'register.php' ? 'active' : ''; ?>"
-                    <?php if ($currentPage === 'register.php') echo 'aria-current="page"'; ?>
-                >
+                    <?php if ($currentPage === 'register.php') echo 'aria-current="page"'; ?>>
                     Register
                 </a>
 
