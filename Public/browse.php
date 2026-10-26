@@ -6,13 +6,13 @@ if (($_SESSION["logged_in"] ?? false) !== true) {
     header("Location: login.php");
     exit;
 }
-
+/*
 require_once('path.inc');
 require_once('get_host_info.inc');
 require_once('rabbitMQLib.inc');
 
-$client = new rabbitMQClient("testRabbitMQ.ini", "testServer");
-/*
+// $client = new rabbitMQClient("testRabbitMQ.ini", "testServer");
+
 $request = [
     "type" => "get_games"
 ];
@@ -333,7 +333,6 @@ usort($filteredGames, function($a, $b) use ($sort) {
         }
     </style>
 </head>
-
 <body>
 
 <?php
@@ -344,19 +343,14 @@ if (file_exists(__DIR__ . "/Navigation.php")) {
 ?>
 
 <main class="browse-container">
-
     <div class="browse-header">
         <h1>Browse Games</h1>
         <p>Discover new games, explore genres, and build your watchlist.</p>
     </div>
-
     <!-- Search stuff -->
     <form class="browse-filters" method="GET" action="browse.php">
         <input
-            type="search"
-            name="search"
-            placeholder="Search for a game..."
-            value="<?php echo escapeHTML($search); ?>">
+            type="search" name="search" placeholder="Search for a game..." value="<?php echo escapeHTML($search); ?>">
 
         <select name="genre">
             <option value="">All Genres</option>

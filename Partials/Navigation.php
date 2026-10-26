@@ -35,7 +35,7 @@ $isLoggedIn = ($_SESSION["logged_in"] ?? false) === true;
 
                 <a href="browse.php"
                     class="<?php echo $currentPage === 'browse.php' ? 'active' : ''; ?>">
-                    <?php if ($currentPage === 'browse.php') echo 'aria-current="page"'; ?>>
+                    <?php if ($currentPage === 'browse.php') echo 'aria-current="page"'; ?>
                     Browse Games
                 </a>
 
