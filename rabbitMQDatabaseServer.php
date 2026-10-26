@@ -26,10 +26,10 @@ function doLogin($username,$password)
         $stmtCount = $pdo->prepare($queryCount);
         $execCount = $stmtCount->execute([$username]);
         $resultCount = $stmtCount->fetchColumn();
-        echo "Made it past the resultcount";
+        echo "Made it past the resultcount" . PHP_EOL;
 
         if ($resultCount == 0){
-            echo "resultcount is 0";
+            echo "resultcount is 0" . PHP_EOL;
             return false;
         }
         else
@@ -41,15 +41,15 @@ function doLogin($username,$password)
             $result2 = $stmt2->fetchAll(PDO::FETCH_ASSOC);
             foreach ($result2 as $row)
             {
-                echo "we are in foreach loop";
+                echo "we are in foreach loop" . PHP_EOL;
                 if (password_verify($password, $row['password_hash']))
                 {
-                    echo "Password verified!";
+                    echo "Password verified!" . PHP_EOL;
                     return true;
                 }
             }
 
-            echo "Invalid login.";
+            echo "Invalid login." . PHP_EOL;
             return false;
         }
 
@@ -92,7 +92,7 @@ function doRegister($username, $email, $password)
 function requestProcessor($request)
 {
   echo "received request".PHP_EOL;
-  var_dump($request);
+  //var_dump($request);
   if(!isset($request['type']))
   {
     return "ERROR: unsupported message type";
