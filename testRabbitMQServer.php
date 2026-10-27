@@ -3,6 +3,7 @@
 require_once('path.inc');
 require_once('get_host_info.inc');
 require_once('rabbitMQLib.inc');
+require_once('igdbClient.php');
 
 function sentDatabaseRequest($request) {
     try {
@@ -119,6 +120,22 @@ function requestProcessor($request)
 
       case "validate_session":
           return false;
+
+      case "searchGames":
+	try {
+		$gameName = $request["gameName"] ?? "";
+		$games = searchGames($gameName);
+		
+		return [
+			"success"  => true,
+			"games" => $games
+		];
+	} catch (Exception $e) {
+		return [
+			"success" => false,
+			"message" => $e->getMessage()
+		];
+	}
 
       default:
           echo "Unknown request type" . PHP_EOL;

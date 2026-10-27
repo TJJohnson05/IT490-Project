@@ -6,72 +6,33 @@ IGDB APT Integration
 Purpose: This will retrieve video game data from IGDB
 */
 
+require_once __DIR__. '/igdbAuth.php';
+
 function searchGames($gameName) {
 
-	$apiURL = "https://api.igdb.com/v4/games";
+    $gameName = trim($gameName);
 
-	$clientID = getenv("IGDB_CLIENT_ID");
-	$accessToken = getenv("IGDB_ACCESS_TOKEN");
+    if ($gameName === "") {
+        throw new Exception("Please enter a game name.");
+    }
 
-	if (!$clientID || !$accessToken) {
-		throw new Exception ("IGDB credentials are missing.");
-	}
 
-	$gameName = trim($gameName);
+    $gameName = str_replace(["\r", "\n"], " ", $gameName);
+    $gameName = addcslashes($gameName, "\\\"");
 
-	if($gameName === "") {
-		throw new Exception("Please enter a game name.");
-	}
+    $query = 'search "' . $gameName . '"; '
+           . 'fields name,cover.image_id,first_release_date,rating,summary; '
+           . 'limit 10;';
 
-	$gameName = trim($gameName);
-	
-	if ($gameName === "") {
-		throw new Exception("Please enter a game name.");
-	}
+    $response = igdbRequest($query);
 
-	$gameName = str_replace(["\r", "\n"], " ", $gameName);
-	$gameName = addcslashes($gameName, "\\\"");
+    $games = json_decode($response, true);
 
-	$query = 'search " ' . $gameName . '"; '
-		. 'fields name,cover.image_id,first_release_date,rating,summary; '
-		. 'limit 10;';
+    if (!is_array($games)) {
+        throw new Exception("Invalid IGDB response.");
+    }
 
-	//game name, cover image, release dates 
-
-	$ch = curl_init($apiURL);
-
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-	curl_setopt($ch, CURLOPT_POST, true);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
-
-	curl_setopt($ch, CURLOPT_HTTPHEADER, [
-		"Client-ID: $clientID", 
-		"Authorization: Bearer $accessToken", 
-		"Content-Type: text/plain" 
-	]);
-
-	$response = curl_exec($ch);
-
-	if($response === false) {
-		$error = curl_error($ch);
-		curl_close($ch);
-		throw new Exception ("API Error: " . $error);
-	}
-	
-	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	curl_close($ch);
-
-	if ($httpCode !== 200) {
-		throw new Exception("IGDB API Error : HTTP ". $httpCode);
-	}
-
-	$games = json_decode($response, true);
-
-	if (!is_array($games)) {
-		throw new Exception("Invalide response from IGDB.");
-	}
-
-	return $games;
+    return $games;
 }
 
 if (isset ($_SERVER["SCRIPT_FILENAME"]) && realpath($_SERVER["SCRIPT_FILENAME"]) === __FILE__) {
