@@ -1,140 +1,90 @@
-
 <?php
 session_start();
-// Only logged in users
 if (($_SESSION["logged_in"] ?? false) !== true) {
     header("Location: login.php");
     exit;
 }
-/*
-require_once('path.inc');
-require_once('get_host_info.inc');
-require_once('rabbitMQLib.inc');
 
-// $client = new rabbitMQClient("testRabbitMQ.ini", "testServer");
+// RabbitMQ client files must be available on the frontend VM.
+require_once __DIR__ . '/../path.inc';
+require_once __DIR__ . '/../get_host_info.inc';
+require_once __DIR__ . '/../rabbitMQLib.inc';
 
-$request = [
-    "type" => "get_games"
-];
+require_once __DIR__ . "/gameData.php";
 
-$response = $client->send_request($request);
-
-$games = $response["games"] ?? [];
-*/
-// Temporary game data for testing
-$games = [
-    [
-        "id" => 1,
-        "name" => "Elden Ring",
-        "genre" => "RPG",
-        "release_date" => "2022-02-25",
-        "description" => "Explore a vast fantasy world filled with challenging enemies, powerful bosses, and hidden secrets.",
-        "cover" => ""
-    ],
-    [
-        "id" => 2,
-        "name" => "Minecraft",
-        "genre" => "Sandbox",
-        "release_date" => "2011-11-18",
-        "description" => "Build, explore, and survive in an endless world made entirely of blocks.",
-        "cover" => ""
-    ],
-    [
-        "id" => 3,
-        "name" => "Cyberpunk 2077",
-        "genre" => "RPG",
-        "release_date" => "2020-12-10",
-        "description" => "Become a mercenary in Night City, a futuristic world driven by technology and power.",
-        "cover" => ""
-    ],
-    [
-        "id" => 4,
-        "name" => "Stardew Valley",
-        "genre" => "Simulation",
-        "release_date" => "2016-02-26",
-        "description" => "Build your dream farm, meet villagers, and explore a charming countryside.",
-        "cover" => ""
-    ],
-    [
-        "id" => 5,
-        "name" => "Hollow Knight",
-        "genre" => "Platformer",
-        "release_date" => "2017-02-24",
-        "description" => "Explore an interconnected underground kingdom filled with mysterious creatures.",
-        "cover" => ""
-    ],
-    [
-        "id" => 6,
-        "name" => "Red Dead Redemption 2",
-        "genre" => "Action",
-        "release_date" => "2018-10-26",
-        "description" => "Experience an epic western adventure in a massive open world.",
-        "cover" => ""
-    ],
-    [
-        "id" => 7,
-        "name" => "Baldur's Gate 3",
-        "genre" => "RPG",
-        "release_date" => "2023-08-03",
-        "description" => "Gather your party and embark on an adventure shaped by your choices.",
-        "cover" => ""
-    ],
-    [
-        "id" => 8,
-        "name" => "Hades",
-        "genre" => "Roguelike",
-        "release_date" => "2020-09-17",
-        "description" => "Battle your way out of the underworld in a fast-paced action adventure.",
-        "cover" => ""
-    ]
-];
-
-//function for displaying things as text
 function escapeHTML($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-// Filter games using search input
-$search = trim($_GET["search"] ?? "");
-$genre = trim($_GET["genre"] ?? "");
-$sort = $_GET["sort"] ?? "name";
-
-$allowedSorts = ["name", "newest", "oldest"];
-
-if (!in_array($sort, $allowedSorts, true)) {
-    $sort = "name";
+$search = trim((string)($_GET['search'] ?? ''));
+$sort = (string)($_GET['sort'] ?? 'name');
+if (!in_array($sort, ['name', 'newest', 'oldest'], true)) {
+    $sort = 'name';
 }
 
-// Looking for available genres 
-$genres = array_unique(array_column($games, "genre"));
-sort($genres);
+$games = [];
+$errorMessage = '';
+$searched = $search !== '';
 
-// Filters
-$filteredGames = array_filter($games, function($game) use ($search, $genre) {
+if ($searched) {
+    if (mb_strlen($search) > 100) {
+        $errorMessage = 'Please use a search term of 100 characters or fewer.';
+    } else {
+        try {
+            // Must point to the same broker/queue as your working testIGDBRabbitMQ.php.
+            $client = new rabbitMQClient('testRabbitMQ.ini', 'testServer');
+            $response = $client->send_request([
+                'type' => 'searchGames',
+                'gameName' => $search
+            ]);
 
-    $matchesSearch = $search === "" ||
-        stripos($game["name"], $search) !== false;
+            if (!is_array($response) || ($response['success'] ?? false) !== true) {
+                throw new RuntimeException(
+                    is_array($response) ? (string)($response['message'] ?? 'Game search failed.') : 'Invalid backend response.'
+                );
+            }
 
-    $matchesGenre = $genre === "" ||
-        $game["genre"] === $genre;
+            if (!isset($response['games']) || !is_array($response['games'])) {
+                throw new RuntimeException('Backend returned an invalid games list.');
+            }
 
-    return $matchesSearch && $matchesGenre;
-});
+            foreach ($response['games'] as $item) {
+                if (!is_array($item) || !isset($item['id'], $item['name'])) {
+                    continue;
+                }
+                $imageId = $item['cover']['image_id'] ?? '';
+                $cover = is_string($imageId) && preg_match('/^[a-zA-Z0-9_]+$/', $imageId)
+                    ? 'https://images.igdb.com/igdb/image/upload/t_cover_big/' . $imageId . '.jpg'
+                    : '';
+                $timestamp = $item['first_release_date'] ?? null;
+                $date = is_numeric($timestamp) ? gmdate('Y-m-d', (int)$timestamp) : '';
+                $rating = isset($item['rating']) && is_numeric($item['rating'])
+                    ? number_format((float)$item['rating'], 1) . '/100'
+                    : 'Not rated';
 
-// Sorting specific results
-usort($filteredGames, function($a, $b) use ($sort) {
-
-    if ($sort === "newest") {
-        return strcmp($b["release_date"], $a["release_date"]);
+                $games[] = [
+                    'id' => (int)$item['id'],
+                    'name' => (string)$item['name'],
+                    'genre' => 'Genre unavailable', // Add genres to backend IGDB fields later.
+                    'release_date' => $date ?: 'Unknown',
+                    'description' => (string)($item['summary'] ?? 'No description available.'),
+                    'cover' => $cover,
+                    'rating' => $rating
+                ];
+            }
+        } catch (Throwable $e) {
+            error_log('Browse IGDB search failed: ' . $e->getMessage());
+            $errorMessage = 'Unable to load games right now. Please try again later.';
+        }
     }
+}
 
-    if ($sort === "oldest") {
-        return strcmp($a["release_date"], $b["release_date"]);
-    }
-
-    return strcasecmp($a["name"], $b["name"]);
+usort($games, function ($a, $b) use ($sort) {
+    if ($sort === 'newest') return strcmp($b['release_date'], $a['release_date']);
+    if ($sort === 'oldest') return strcmp($a['release_date'], $b['release_date']);
+    return strcasecmp($a['name'], $b['name']);
 });
-
+$filteredGames = $games;
 ?>
 
 <!DOCTYPE html>
@@ -421,15 +371,9 @@ usort($filteredGames, function($a, $b) use ($sort) {
         <input
             type="search" name="search" placeholder="Search for a game..." value="<?php echo escapeHTML($search); ?>">
 
-        <select name="genre">
-            <option value="">All Genres</option>
-            <?php foreach ($genres as $gameGenre): ?>
-                <option
-                    value="<?php echo escapeHTML($gameGenre); ?>"
-                    <?php echo $genre === $gameGenre ? "selected" : ""; ?>>
-                    <?php echo escapeHTML($gameGenre); ?>
-                </option>
-            <?php endforeach; ?>
+        <!-- Genre filter will be enabled when backend IGDB queries include genres. -->
+        <select name="genre" disabled title="Genre filtering coming soon">
+            <option>All Genres (coming soon)</option>
         </select>
             <!-- Sorting stuff -->
         <select name="sort">
@@ -447,8 +391,11 @@ usort($filteredGames, function($a, $b) use ($sort) {
     </form>
 
     <p class="game-count">
-        Showing <?php echo count($filteredGames); ?> games
+        <?php echo $searched ? 'Showing ' . count($filteredGames) . ' games' : 'Search for a game to get started'; ?>
     </p>
+    <?php if ($errorMessage !== ''): ?>
+        <div class="no-results" role="alert"><p><?php echo escapeHTML($errorMessage); ?></p></div>
+    <?php endif; ?>
 
     <!-- Game cards -->
     <?php if (!empty($filteredGames)): ?>
@@ -478,6 +425,9 @@ usort($filteredGames, function($a, $b) use ($sort) {
                         </div>
                         <p class="game-description">
                             <?php echo escapeHTML($game["description"]); ?>
+                        </p>
+                        <p class="game-release">
+                            IGDB Rating: <?php echo escapeHTML($game["rating"]); ?>
                         </p>
                         <p class="game-release">
                             Release Date:
@@ -511,10 +461,10 @@ usort($filteredGames, function($a, $b) use ($sort) {
                 </article>
             <?php endforeach; ?>
         </div>
-    <?php else: ?>
+    <?php elseif ($errorMessage === ''): ?>
         <div class="no-results">
-            <h2>No games found</h2>
-            <p>Try searching for another game or changing your filters.</p>
+            <h2><?php echo $searched ? 'No games found' : 'Find your next game'; ?></h2>
+            <p><?php echo $searched ? 'Try another game name.' : 'Enter a game title in the search box above.'; ?></p>
         </div>
     <?php endif; ?>
 </main>
