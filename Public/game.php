@@ -1,35 +1,120 @@
-
 <?php
 session_start();
-
+require_once __DIR__ . '/../path.inc';
+require_once __DIR__ . '/../get_host_info.inc';
+require_once __DIR__ . '/../rabbitMQLib.inc';
 require_once __DIR__ . "/gameData.php";
 
-
-if (empty($_SESSION["logged_in"])) {
+if (($_SESSION["logged_in"] ?? false) !== true) {
     header("Location: login.php");
     exit;
 }
 
-// Get game id 
-$gameId = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
+// Read and validate IGDB game ID from URL
+$gameId = filter_input(
+    INPUT_GET,
+    "id",
+    FILTER_VALIDATE_INT,
+    ["options" => ["min_range" => 1]]
+);
 
-// Find  game
 $game = null;
+$errorMessage = "";
 
-foreach (getSampleGames() as $item) {
-    if ($gameId !== false &&
-        $gameId !== null &&
-        $item["id"] === $gameId) {
-        $game = $item;
-        break;
+if ($gameId === false || $gameId === null) {
+    $errorMessage = "Invalid game ID.";
+    http_response_code(400);
+} else {
+    try {
+       
+        $client = new rabbitMQClient(
+            __DIR__ . "/../testRabbitMQ.ini",
+            "testServer"
+        );
+
+       
+        $response = $client->send_request([
+            "type" => "getGameDetails",
+            "gameId" => $gameId
+        ]);
+
+        if (!is_array($response)) {
+            throw new RuntimeException("Invalid backend response.");
+        }
+
+        if (($response["success"] ?? false) !== true) {
+            if (($response["message"] ?? "") === "Game not found.") {
+                http_response_code(404);
+                $errorMessage = "Game not found.";
+            } else {
+                throw new RuntimeException("Backend game lookup failed.");
+            }
+        } else {
+            $data = $response["game"] ?? null;
+
+            if (!is_array($data) || !isset($data["id"], $data["name"])) {
+                throw new RuntimeException("Invalid game data.");
+            }
+
+            // IGDB cover image
+            $imageId = $data["cover"]["image_id"] ?? "";
+
+            $cover = "";
+
+            if (is_string($imageId) &&
+                preg_match('/^[a-zA-Z0-9_]+$/', $imageId)) {
+                $cover = "https://images.igdb.com/igdb/image/upload/t_cover_big/"
+                       . $imageId . ".jpg";
+            }
+
+            //  release date
+            $releaseDate = "Unknown";
+
+            if (isset($data["first_release_date"]) &&
+                is_numeric($data["first_release_date"])) {
+                $releaseDate = gmdate(
+                    "Y-m-d",
+                    (int)$data["first_release_date"]
+                );
+            }
+
+            // genres
+            $genres = [];
+
+            foreach (($data["genres"] ?? []) as $genre) {
+                if (is_array($genre) && isset($genre["name"])) {
+                    $genres[] = (string)$genre["name"];
+                }
+            }
+
+            $genreText = !empty($genres)
+                ? implode(", ", $genres)
+                : "Unknown";
+
+            
+            $game = [
+                "id" => (int)$data["id"],
+                "name" => (string)$data["name"],
+                "genre" => $genreText,
+                "release_date" => $releaseDate,
+                "description" => (string)(
+                    $data["summary"] ?? "No description available."
+                ),
+                "cover" => $cover,
+                "rating" => isset($data["rating"]) &&
+                            is_numeric($data["rating"])
+                    ? number_format((float)$data["rating"], 1) . "/100"
+                    : "Not rated"
+            ];
+        }
+
+    } catch (Throwable $e) {
+        error_log("Game details failed: " . $e->getMessage());
+
+        $errorMessage = "Unable to load game details right now.";
+        http_response_code(502);
     }
 }
-
-// if game no exist
-if ($game === null) {
-    http_response_code(404);
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -46,7 +131,7 @@ if ($game === null) {
         | 
     </title>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
 
     <style>
         /* I hate it here */
@@ -245,8 +330,12 @@ if ($game === null) {
     <?php if ($game === null): ?>
 
         <div class="not-found">
-            <h1>Game Not Found</h1>
-            <p>The requested game does not exist.</p>
+            <h1>Game Unavailable</h1>
+            <p>
+                <?php echo escapeHTML(
+                    $errorMessage ?: "The requested game does not exist."
+                ); ?>
+            </p>
         </div>
 
     <?php else: ?>
@@ -288,6 +377,11 @@ if ($game === null) {
                     <p>
                         <strong>Genre:</strong>
                         <?php echo escapeHTML($game["genre"]); ?>
+                    </p>
+
+                    <p>
+                        <strong>IGDB Rating:</strong>
+                        <?php echo escapeHTML($game["rating"]); ?>
                     </p>
                 </div>
 

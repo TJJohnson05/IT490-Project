@@ -1,18 +1,13 @@
 <?php
-
-/*
-IT490 - Game Data
-
-Retrieves game information from the backend
-through RabbitMQ.
-
-Frontend VM -> RabbitMQ -> Backend VM -> IGDB API
-*/
-
+session_start();
 require_once __DIR__ . '/../path.inc';
 require_once __DIR__ . '/../get_host_info.inc';
 require_once __DIR__ . '/../rabbitMQLib.inc';
 
+if (($_SESSION["logged_in"] ?? false) !== true) {
+    header("Location: login.php");
+    exit;
+}
 
 function searchGamesFromBackend(string $gameName): array
 {
