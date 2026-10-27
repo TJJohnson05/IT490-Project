@@ -398,10 +398,7 @@ usort($filteredGames, function($a, $b) use ($sort) {
 <body>
 
 <?php
-// Load your existing navigation component
-if (file_exists(__DIR__ . "/Navigation.php")) {
-    include __DIR__ . "/Navigation.php";
-}
+    require __DIR__ . "/../Partials/Navigation.php"; 
 ?>
 
 <main class="browse-container">
