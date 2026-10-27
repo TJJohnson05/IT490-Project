@@ -12,9 +12,6 @@ require_once __DIR__ . '/../rabbitMQLib.inc';
 
 require_once __DIR__ . "/gameData.php";
 
-function escapeHTML($value) {
-    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
-}
 
 $search = trim((string)($_GET['search'] ?? ''));
 $sort = (string)($_GET['sort'] ?? 'name');
