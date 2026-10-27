@@ -289,7 +289,7 @@ usort($filteredGames, function($a, $b) use ($sort) {
 
         .game-info h3 {
             margin: 0 0 12px;
-            color: #172554;
+            color: black;
             font-size: 23px;
             font-weight: 800;
             line-height: 1.3;
