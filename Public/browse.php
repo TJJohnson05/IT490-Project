@@ -371,7 +371,17 @@ usort($filteredGames, function($a, $b) use ($sort) {
             outline: 3px solid #60a5fa;
             outline-offset: 3px;
         }
+        /* Clickable game titles */
+        .game-title a {
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: 700;
+        }
 
+        .game-title a:hover {
+            color: #2563eb;
+            text-decoration: underline;
+        }
         @media (max-width: 900px) {
             .browse-container .browse-filters {
                 grid-template-columns: 1fr 1fr;
@@ -456,7 +466,13 @@ usort($filteredGames, function($a, $b) use ($sort) {
                         <?php endif; ?>
                     </div>
                     <div class="game-info">
-                        <h3><?php echo escapeHTML($game["name"]); ?></h3>
+                                                
+                        <h3 class="game-title">
+                            <a href="game.php?id=<?php echo urlencode((string)$game["id"]); ?>">
+                                <?php echo escapeHTML($game["name"]); ?>
+                            </a>
+                        </h3>
+
                         <div class="game-genre">
                             <?php echo escapeHTML($game["genre"]); ?>
                         </div>
