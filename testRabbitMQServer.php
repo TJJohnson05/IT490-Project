@@ -120,28 +120,67 @@ function requestProcessor($request)
 
       case "validate_session":
           return false;
-
+        // search for games feature on the browse page
       case "searchGames":
-	try {
-		$gameName = $request["gameName"] ?? "";
-		$games = searchGames($gameName);
-		
-		return [
-			"success"  => true,
-			"games" => $games
-		];
-	} catch (Exception $e) {
-		return [
-			"success" => false,
-			"message" => $e->getMessage()
-		];
-	}
+        try {
+            $gameName = $request["gameName"] ?? "";
+            $games = searchGames($gameName);
+            
+            return [
+                "success"  => true,
+                "games" => $games
+            ];
+        } catch (Exception $e) {
+            return [
+                "success" => false,
+                "message" => $e->getMessage()
+            ];
+        }
 
-      default:
-          echo "Unknown request type" . PHP_EOL;
-          return false;
-        
-  }
+        default:
+            echo "Unknown request type" . PHP_EOL;
+            return false;
+            //view details on the browse page cards
+            case "getGameDetails":
+                try {
+                    $gameId = filter_var(
+                        $request["gameId"] ?? null,
+                        FILTER_VALIDATE_INT,
+                        ["options" => ["min_range" => 1]]
+                    );
+            
+                    if ($gameId === false) {
+                        return [
+                            "success" => false,
+                            "message" => "Invalid game ID."
+                        ];
+                    }
+            
+                    echo "Fetching IGDB game ID: " . $gameId . PHP_EOL;
+            
+                    $game = getGameDetails($gameId);
+            
+                    if ($game === null) {
+                        return [
+                            "success" => false,
+                            "message" => "Game not found."
+                        ];
+                    }
+            
+                    return [
+                        "success" => true,
+                        "game" => $game
+                    ];
+            
+                } catch (Throwable $e) {
+                    error_log("IGDB game details error: " . $e->getMessage());
+            
+                    return [
+                        "success" => false,
+                        "message" => "Unable to retrieve game details."
+                    ];
+                }       
+    }
 
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }

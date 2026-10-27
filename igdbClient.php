@@ -49,4 +49,32 @@ if (isset ($_SERVER["SCRIPT_FILENAME"]) && realpath($_SERVER["SCRIPT_FILENAME"])
 		exit(1);
 	}
 }
+function getGameDetails(int $gameId): ?array
+{
+    if ($gameId <= 0) {
+        throw new InvalidArgumentException("Invalid game ID.");
+    }
+
+    // IGDB query for one specific game.
+    $query = 'fields name,summary,cover.image_id,'
+           . 'first_release_date,rating,genres.name; '
+           . 'where id = ' . $gameId . '; '
+           . 'limit 1;';
+
+    // Reuse the existing IGDB authentication
+    $response = igdbRequest($query);
+
+    $games = json_decode($response, true);
+
+    if (!is_array($games)) {
+        throw new RuntimeException("Invalid IGDB response.");
+    }
+
+    // No game found with the supplied ID.
+    if (empty($games)) {
+        return null;
+    }
+
+    return $games[0];
+}
 ?>
