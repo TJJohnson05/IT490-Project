@@ -234,7 +234,7 @@ function doAddWatchlist($username, $game_id)
     }
 }
 
-function doGetWatchlists($username)
+function doGetWatchlist($username)
 {
     try
     {
@@ -344,7 +344,9 @@ function requestProcessor($request)
           {
               return false;
           }
-          return doGetWatchlist($request["username"]);
+          return doGetWatchlist(
+              $request["username"]
+          );
       case "validate_session":
           return false;
 
