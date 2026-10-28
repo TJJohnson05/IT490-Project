@@ -69,7 +69,7 @@ if ($gameId === false || $gameId === null) {
                     $writeResponse = $dbClient->send_request([
                         "type" => "write_rating",
                         "game_id" => $gameId,
-                        "username" => $_SESSION["username"],
+                        "username" => $username,
                         "rating" => $rating,
                         "review" => $submittedReview
                     ]);
