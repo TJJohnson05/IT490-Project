@@ -38,7 +38,7 @@ if (!is_string($username) || $username === '') {
         if (
             is_array($response) = true 
         ) {
-            $watchlist = $response['watchlist'];
+            $watchlist = $response;
         } else {
             $watchlistError = 'Unable to load your watchlist.';
         }
