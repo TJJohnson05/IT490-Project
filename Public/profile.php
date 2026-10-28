@@ -6,6 +6,51 @@ if (($_SESSION['logged_in'] ?? false) !== true) {
 }
 header('Cache-Control: no-store, private');
 require_once __DIR__ . '/../Partials/profile_helpers.php';
+
+// logged in users watchlist 
+
+// Retrieve the logged-in user's watchlist
+$watchlist = [];
+$watchlistError = '';
+
+$username = $_SESSION['username']
+    ?? $_SESSION['login_name']
+    ?? null;
+
+if (!is_string($username) || $username === '') {
+    $watchlistError = 'Unable to identify the logged-in user.';
+} else {
+    try {
+        require_once __DIR__ . '/../path.inc';
+        require_once __DIR__ . '/../get_host_info.inc';
+        require_once __DIR__ . '/../rabbitMQLib.inc';
+
+        $dbClient = new rabbitMQClient(
+            __DIR__ . '/../testRabbitMQDatabase.ini',
+            'databaseServer'
+        );
+
+        $response = $dbClient->send_request([
+            'type' => 'get_watchlist',
+            'username' => $username
+        ]);
+
+        if (
+            is_array($response) &&
+            ($response['success'] ?? false) === true &&
+            is_array($response['watchlist'] ?? null)
+        ) {
+            $watchlist = $response['watchlist'];
+        } else {
+            $watchlistError = 'Unable to load your watchlist.';
+        }
+
+    } catch (Throwable $e) {
+        error_log('Watchlist lookup failed: ' . $e->getMessage());
+        $watchlistError = 'Watchlist service unavailable.';
+    }
+}
+
 // The existing login returns only true, so reverify the password at the worker.
 // Never accept an account ID or account selector from a submitted form.
 $_SESSION['profile_csrf'] ??= bin2hex(random_bytes(32));
@@ -74,6 +119,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/styles.css?v=profiles1">
 </head>
 <body>
+<section class="profile-watchlist">
+    <h2>My Watchlist</h2>
+    <?php if ($watchlistError !== ''): ?>
+        <p><?= htmlspecialchars($watchlistError) ?></p>
+    <?php elseif (empty($watchlist)): ?>
+        <p>You haven't added any games yet.</p>
+        <a href="browse.php">Browse Games</a>
+    <?php else: ?>
+        <p><?= count($watchlist) ?> games saved</p>
+        <div class="watchlist-grid">
+            <?php foreach ($watchlist as $game): ?>
+                <?php
+                    if (!is_array($game)) continue;
+                    $id = filter_var(
+                        $game['igdb_id'] ?? null,
+                        FILTER_VALIDATE_INT
+                    );
+                    if ($id === false || $id === null || $id <= 0) {
+                        continue;
+                    }
+                    $name = htmlspecialchars(
+                        (string)($game['name'] ?? 'Unknown Game'),
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                ?>
+                <div class="watchlist-card">
+                    <h3><?= $name ?></h3>
+                    <a href="game.php?id=<?= $id ?>">
+                        View Game
+                    </a>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</section>
 <?php require __DIR__ . '/../Partials/Navigation.php'; ?>
 <main class="profile-page">
     <h2>My Profile</h2>
