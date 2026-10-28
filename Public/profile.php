@@ -36,9 +36,7 @@ if (!is_string($username) || $username === '') {
         ]);
 
         if (
-            is_array($response) &&
-            ($response['success'] ?? false) === true &&
-            is_array($response['watchlist'] ?? null)
+            is_array($response) = true 
         ) {
             $watchlist = $response['watchlist'];
         } else {
