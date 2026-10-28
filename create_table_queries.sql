@@ -45,3 +45,14 @@ CREATE TABLE `game_ratings` (
   CONSTRAINT `fk_rating_game_id` FOREIGN KEY (`game_id`) REFERENCES `games` (`id`),
   CONSTRAINT `fk_rating_username` FOREIGN KEY (`username`) REFERENCES `users` (`username`)
 );
+
+CREATE TABLE watchlists (
+  watchlist_id int NOT NULL AUTO_INCREMENT,
+  game_id int,
+  username varchar(30),
+  PRIMARY KEY ('watchlist_id'),
+  KEY fk_watchlist_game_id ('game_id'),
+  KEY fk_watchlist_username ('username'),
+  CONSTRAINT fk_watchlist_game_id FOREIGN KEY ('game_id') REFERENCES 'games' ('igdb_id'),
+  CONSTRAINT fk_watchlist_username FOREIGN KEY ('username') REFERENCES 'users' ('username')
+);

@@ -106,9 +106,11 @@ function doUpdateDB($games)
             $timestamp = $item['first_release_date'] ?? null;
             $date = is_numeric($timestamp) ? gmdate('Y-m-d', (int)$timestamp) : '';
             $rating = isset($item['rating']) && is_numeric($item['rating'])
-            ? number_format((float)$item['rating'], 1) . '/100'
-            : 'Not rated';
+            ? $item['rating'] //? number_format((float)$item['rating'], 1) . '/100'
+            : 0;
             $igdb_id = $item['id'];
+            $name = $item['name'];
+            $summary = $item['summary'] ?? null;
 
 
 
@@ -117,23 +119,26 @@ function doUpdateDB($games)
             $execCount = $stmtCount->execute([$igdb_id]);
             $resultCount = $stmtCount->fetchColumn();
             //echo "Made it past the resultcount" . PHP_EOL;
+            echo "adding game " . $name . PHP_EOL;
+            if ($resultCount == 0){
+                echo "creating new entry for game" . PHP_EOL;
+                $query = "INSERT INTO games (igdb_id, name, summary, cover, first_release_date, rating) VALUES (?, ?, ?, ?, ?, ?)";
+                $stmt = $pdo->prepare($query);
+                $result = $stmt->execute([$igdb_id, $name, $summary, $cover, $date, $rating]);
+                echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+            }
+            else
+            {
+                echo "entry already exists, updating";
+                $query2 = "UPDATE games SET name=?, summary=?, cover=?, first_release_date=?,rating=? WHERE igdb_id = ?";
+                $stmt2 = $pdo->prepare($query2);
+                $result = $stmt2->execute([$name, $summary, $cover, $date, $rating, $igdb_id]);
 
-        if ($resultCount == 0){
-            echo "creating new entry for game" . PHP_EOL;
-            $query = "INSERT INTO games (igdb_id, name, summary, cover, first_release_date, rating) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($query);
-            $result = $stmt->execute([$igdb_id, $name, $summary, $cover, $timestamp, $rating]);
-            echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
-        }
-        else
-        {
-            echo "entry already exists, updating";
-            $query2 = "UPDATE games SET name=?, summary=?, cover=?, first_release_date=?,rating=? WHERE igdb_id = ?;"
-            $stmt2 = $pdo->prepare($query2);
-            $result = $stmt2->execute([$name, $summary, $cover, $timestamp, $rating, $igdb_id]);
+                echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+            }
 
-            echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
         }
+        echo "finished with games" . PHP_EOL;
         return true;
 
     } catch (PDOException $e) {
@@ -175,27 +180,27 @@ function doGetRatings($game_id)
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-
-        $ratings_list = []
-        foreach ($ratings as $rating)
+        $ratings_list = [];
+        $query = "SELECT game_id, username, rating, review from game_ratings WHERE game_id = ?;";
+        $stmt = $pdo->prepare($query);
+        $exec = $stmt->execute([$game_id]);
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        foreach($result as $row)
         {
-            $query = "SELECT from game_ratings (game_id, username, rating, review) WHERE game_id = ?";
-            $stmt = $pdo->prepare($query);
-            $exec = $stmt->execute([$game_id]);
-            $result = $exec->fetchAll(\PDO::FETCH_ASSOC);
-            foreach($result as $row)
-            {
-                $rating_individual = [
-                    "game_id" => $row['game_id'],
-                    "username" => $row['username'],
-                    "rating" => $row['rating'],
-                    "review" => $row['review']
-                ]
-                $ratings_list[] = $rating_individual;
-            }
-            return $ratings_list;
-
+            $rating_individual = [
+                "game_id" => $row['game_id'],
+                "username" => $row['username'],
+                "rating" => $row['rating'],
+                "review" => $row['review']
+            ];
+            $ratings_list[] = $rating_individual;
         }
+        $rating_return = [
+            "success" => true,
+            "ratings" => $ratings_list
+        ];
+        return $rating_return;
+
 
     } catch (PDOException $e) {
         error_log("Database connection error: " . $e->getMessage());
@@ -206,6 +211,66 @@ function doGetRatings($game_id)
     }
 }
 
+
+function doAddWatchlist($username, $game_id)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "INSERT INTO watchlists (username, game_id) VALUES (?, ?)";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([$username, $game_id]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
+function doGetWatchlists($username)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+
+        $game_names = [];
+        $query = "SELECT game_id from watchlists WHERE username = ?";
+        $stmt = $pdo->prepare($query);
+        $exec = $stmt->execute([$username]);
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        foreach($result as $row)
+        {
+            $game_id_individual = $row['game_id'];
+            //$game_ids[] = $game_id_individual;
+
+            //second query to get game name
+            $query2 = "SELECT name from games WHERE igdb_id = ?";
+            $stmt2 = $pdo->prepare($query2);
+            $exec2 = $stmt2->execute([$game_id_individual]);
+
+            $result2 = $stmt2->fetch(\PDO::FETCH_ASSOC);
+            $game_name = $result2['name'];
+            $game_names[] = $game_name;
+        }
+        return ($game_names);
+
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
 
 function requestProcessor($request)
 {
@@ -268,6 +333,18 @@ function requestProcessor($request)
             $request["rating"],
             $request["review"]
         );
+      case "add_watchlist":
+          if(!isset($request["username"]))
+          {
+              return false;
+        }
+        return doAddWatchlist($request["username"],$request["game_id"]);
+      case "get_watchlist":
+          if(!isset($request["username"]))
+          {
+              return false;
+          }
+          return doGetWatchlist($request["username"]);
       case "validate_session":
           return false;
 
