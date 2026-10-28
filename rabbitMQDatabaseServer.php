@@ -89,6 +89,124 @@ function doRegister($username, $email, $password)
     }
 }
 
+function doUpdateDB($games)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        foreach ($games as $item) {
+            if (!is_array($item) || !isset($item['id'], $item['name'])) {
+                continue;
+            }
+            $imageId = $item['cover']['image_id'] ?? '';
+            $cover = is_string($imageId) && preg_match('/^[a-zA-Z0-9_]+$/', $imageId)
+            ? 'https://images.igdb.com/igdb/image/upload/t_cover_big/' . $imageId . '.jpg'
+            : '';
+            $timestamp = $item['first_release_date'] ?? null;
+            $date = is_numeric($timestamp) ? gmdate('Y-m-d', (int)$timestamp) : '';
+            $rating = isset($item['rating']) && is_numeric($item['rating'])
+            ? number_format((float)$item['rating'], 1) . '/100'
+            : 'Not rated';
+            $igdb_id = $item['id'];
+
+
+
+            $queryCount= "SELECT COUNT(*) FROM games WHERE igdb_id = ?"; // AND password_hash = '$password_hash';
+            $stmtCount = $pdo->prepare($queryCount);
+            $execCount = $stmtCount->execute([$igdb_id]);
+            $resultCount = $stmtCount->fetchColumn();
+            //echo "Made it past the resultcount" . PHP_EOL;
+
+        if ($resultCount == 0){
+            echo "creating new entry for game" . PHP_EOL;
+            $query = "INSERT INTO games (igdb_id, name, summary, cover, first_release_date, rating) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $pdo->prepare($query);
+            $result = $stmt->execute([$igdb_id, $name, $summary, $cover, $timestamp, $rating]);
+            echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+        }
+        else
+        {
+            echo "entry already exists, updating";
+            $query2 = "UPDATE games SET name=?, summary=?, cover=?, first_release_date=?,rating=? WHERE igdb_id = ?;"
+            $stmt2 = $pdo->prepare($query2);
+            $result = $stmt2->execute([$name, $summary, $cover, $timestamp, $rating, $igdb_id]);
+
+            echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+        }
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+
+
+
+}
+
+function doWriteRating($game_id, $username, $rating, $review)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "INSERT INTO game_ratings (game_id, username, rating, review) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([$game_id, $username, $rating, $review]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+    }
+}
+
+function doGetRatings($game_id)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+
+        $ratings_list = []
+        foreach ($ratings as $rating)
+        {
+            $query = "SELECT from game_ratings (game_id, username, rating, review) WHERE game_id = ?";
+            $stmt = $pdo->prepare($query);
+            $exec = $stmt->execute([$game_id]);
+            $result = $exec->fetchAll(\PDO::FETCH_ASSOC);
+            foreach($result as $row)
+            {
+                $rating_individual = [
+                    "game_id" => $row['game_id'],
+                    "username" => $row['username'],
+                    "rating" => $row['rating'],
+                    "review" => $row['review']
+                ]
+                $ratings_list[] = $rating_individual;
+            }
+            return $ratings_list;
+
+        }
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
+
 function requestProcessor($request)
 {
   echo "received request".PHP_EOL;
@@ -123,7 +241,25 @@ function requestProcessor($request)
               $request["email"],
               $request["password"]
           );
-
+      case "update_db":
+        if(!isset($request["games"]))
+        {
+            return false;
+        }
+        return doUpdateDB(
+            $request["games"]
+        );
+      case "write_rating":
+          if (!isset($request["rating"]))
+          {
+              return false;
+        }
+        return doWriteRating(
+            $request['game_id'],
+            $request["username"],
+            $request["rating"],
+            $request["review"]
+        );
       case "validate_session":
           return false;
 
