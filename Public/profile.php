@@ -128,14 +128,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p><?= count($watchlist) ?> games saved</p>
         <div class="watchlist-grid">
             <?php foreach ($watchlist as $game): ?>
-                <?php echo "$game" ?>
                 <?php
                     $name = htmlspecialchars(
-                        (string)($game ?? 'Unknown Game'),
+                        (string)(
+                            is_array($game)
+                                ? ($game['name'] ?? $game['game_name'] ?? $game['game_id'] ?? 'Unknown Game')
+                                : $game
+                        ),
                         ENT_QUOTES,
                         'UTF-8'
                     );
                 ?>
+
+                <div class="watchlist-card">
+                    <h3><?= $name ?></h3>
+                </div>
+
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
