@@ -36,7 +36,7 @@ if (!is_string($username) || $username === '') {
         ]);
 
         if (
-            is_array($response) = true 
+            is_array($response) === true 
         ) {
             $watchlist = $response;
         } else {
