@@ -14,9 +14,10 @@ CREATE TABLE `games` (
   `igdb_id` int NOT NULL,
   `name` varchar(255) NOT NULL,
   `summary` text,
-  `cover_image_id` varchar(100) DEFAULT NULL,
+  `cover` varchar(500) DEFAULT NULL,
   `rating` decimal(5,2) DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `first_release_date` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `igdb_id` (`igdb_id`)
 );
@@ -34,13 +35,13 @@ CREATE TABLE `release_dates` (
 CREATE TABLE `game_ratings` (
   `rating_id` int NOT NULL AUTO_INCREMENT,
   `game_id` int DEFAULT NULL,
-  `user_id` int DEFAULT NULL,
-  `rating` decimal(2,1) DEFAULT NULL,
-  `review` mediumtext,
+  `username` varchar(30) DEFAULT NULL,
+  `rating` decimal(5,2) DEFAULT NULL,
+  `review` text,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`rating_id`),
   KEY `fk_rating_game_id` (`game_id`),
-  KEY `fk_rating_user_id` (`user_id`),
+  KEY `fk_rating_username` (`username`),
   CONSTRAINT `fk_rating_game_id` FOREIGN KEY (`game_id`) REFERENCES `games` (`id`),
-  CONSTRAINT `fk_rating_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  CONSTRAINT `fk_rating_username` FOREIGN KEY (`username`) REFERENCES `users` (`username`)
 );

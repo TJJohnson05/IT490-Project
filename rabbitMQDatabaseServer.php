@@ -249,6 +249,14 @@ function requestProcessor($request)
         return doUpdateDB(
             $request["games"]
         );
+      case "get_ratings":
+          if (!isset($request["game_id"]))
+          {
+              return false;
+        }
+        return doGetRatings(
+            $request['game_id']
+        );
       case "write_rating":
           if (!isset($request["rating"]))
           {
