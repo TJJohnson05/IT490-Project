@@ -73,7 +73,7 @@ if ($gameId === false || $gameId === null) {
                         "rating" => $rating,
                         "review" => $submittedReview
                     ]);
-                    if ($writeResponse !==true && $writeResponse !== 1) {
+                    if ($writeResponse ==true || $writeResponse == 1) {
                         $reviewSuccess = true;
                         $reviewMessage = "Your review was submitted successfully.";
                         $submittedReview = "";
