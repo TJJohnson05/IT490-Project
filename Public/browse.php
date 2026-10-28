@@ -12,6 +12,12 @@ require_once __DIR__ . '/../rabbitMQLib.inc';
 
 require_once __DIR__ . "/gameData.php";
 
+if (empty($_SESSION['watchlist_csrf'])) {
+    $_SESSION['watchlist_csrf'] = bin2hex(random_bytes(32));
+}
+$watchlistNotice = $_SESSION['watchlist_notice'] ?? null;
+unset($_SESSION['watchlist_notice']);
+
 
 $search = trim((string)($_GET['search'] ?? ''));
 $sort = (string)($_GET['sort'] ?? 'name');
@@ -29,7 +35,7 @@ if ($searched) {
     } else {
         try {
             // Must point to the same broker/queue as your working testIGDBRabbitMQ.php.
-            $client = new rabbitMQClient('testRabbitMQ.ini', 'testServer');
+            $client = new rabbitMQClient(__DIR__ . '/../testRabbitMQ.ini', 'testServer');
             $response = $client->send_request([
                 'type' => 'searchGames',
                 'gameName' => $search
@@ -300,13 +306,23 @@ $filteredGames = $games;
             background: #1d4ed8;
         }
 
-        .watchlist-btn:disabled {
+        .game-actions form { display: flex; flex: 1; min-width: 0; margin: 0; }
+        .game-actions form button { width: 100%; }
+        .watchlist-btn {
             background: #e2e8f0;
-            color: #526176;
+            color: #172554;
             border: 1px solid #cbd5e1;
-            opacity: 1;
-            cursor: not-allowed;
+            cursor: pointer;
         }
+        .watchlist-btn:hover { background: #cbd5e1; }
+        .watchlist-notice {
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            border-radius: 10px;
+            background: #dbeafe;
+            color: #172554;
+        }
+        .watchlist-notice.error { background: #fee2e2; color: #991b1b; }
 
         .no-results,
         .no-results h2,
@@ -363,6 +379,11 @@ $filteredGames = $games;
         <h1>Browse Games</h1>
         <p>Discover new games, explore genres, and build your watchlist.</p>
     </div>
+    <?php if (is_array($watchlistNotice)): ?>
+        <div class="watchlist-notice<?php echo ($watchlistNotice['success'] ?? false) ? '' : ' error'; ?>" role="status">
+            <?php echo escapeHTML((string)($watchlistNotice['message'] ?? '')); ?>
+        </div>
+    <?php endif; ?>
     <!-- Search stuff -->
     <form class="browse-filters" method="GET" action="browse.php">
         <input
@@ -441,18 +462,13 @@ $filteredGames = $games;
                             >
                                 View Details
                             </a>
-                            <!--
-                            Should be where watchlist stuff goes,
-                            hopefully
-                            -->
-                            <button
-                                class="watchlist-btn"
-                                type="button"
-                                disabled
-                                title="Watchlist function coming soon"
-                            >
-                                + Watchlist
-                            </button>
+                                                        <form method="POST" action="watchlist_action.php">
+                                <input type="hidden" name="csrf_token" value="<?php echo escapeHTML($_SESSION['watchlist_csrf']); ?>">
+                                <input type="hidden" name="game_igdb_id" value="<?php echo (int)$game['id']; ?>">
+                                <input type="hidden" name="search" value="<?php echo escapeHTML($search); ?>">
+                                <input type="hidden" name="sort" value="<?php echo escapeHTML($sort); ?>">
+                                <button class="watchlist-btn" type="submit">+ Watchlist</button>
+                            </form>
                         </div>
                     </div>
                 </article>
