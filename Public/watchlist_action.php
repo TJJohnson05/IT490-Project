@@ -100,8 +100,7 @@ try {
     ]);
 
     if (
-        is_array($response) &&
-        ($response['success'] ?? false) === true
+        $response === true
     ) {
         finishWatchlist(
             true,
