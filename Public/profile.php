@@ -129,26 +129,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="watchlist-grid">
             <?php foreach ($watchlist as $game): ?>
                 <?php
-                    if (!is_array($game)) continue;
-                    $id = filter_var(
-                        $game['igdb_id'] ?? null,
-                        FILTER_VALIDATE_INT
-                    );
-                    if ($id === false || $id === null || $id <= 0) {
-                        continue;
-                    }
                     $name = htmlspecialchars(
-                        (string)($game['name'] ?? 'Unknown Game'),
+                        (string)($game ?? 'Unknown Game'),
                         ENT_QUOTES,
                         'UTF-8'
                     );
                 ?>
-                <div class="watchlist-card">
-                    <h3><?= $name ?></h3>
-                    <a href="game.php?id=<?= $id ?>">
-                        View Game
-                    </a>
-                </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
