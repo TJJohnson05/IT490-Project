@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/path.inc';
@@ -109,15 +108,14 @@ try {
 
         //Send the games to DB
         $request = [
-            "type" => "import_games",
+            "type" => "update_db",
             "games" => $games
         ];
 
         $dbResponse = $client->send_request($request);
 
         // Make sure DB gets a response or error 
-        if (!is_array($dbResponse) ||
-            ($dbResponse['success'] ?? false) !== true) {
+        if ($dbResponse!==true&&$dbResponse !==1) {
 
             throw new RuntimeException(
                 "Database import failed after ID $lastId: " .
