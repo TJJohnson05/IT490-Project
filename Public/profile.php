@@ -117,6 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/styles.css?v=profiles1">
 </head>
 <body>
+
+<?php require __DIR__ . '/../Partials/Navigation.php'; ?>
 <section class="profile-watchlist">
     <h2>My Watchlist</h2>
     <?php if ($watchlistError !== ''): ?>
@@ -139,16 +141,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'UTF-8'
                     );
                 ?>
-
                 <div class="watchlist-card">
                     <h3><?= $name ?></h3>
                 </div>
-
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 </section>
-<?php require __DIR__ . '/../Partials/Navigation.php'; ?>
 <main class="profile-page">
     <h2>My Profile</h2>
     <?php if ($message !== ''): ?>
