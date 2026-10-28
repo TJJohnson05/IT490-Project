@@ -96,7 +96,7 @@ try {
     $response = $dbClient->send_request([
         'type' => 'add_watchlist',
         'username' => $username,
-        'game_igdb_id' => $gameId
+        'game_id' => $gameId
     ]);
 
     if (
