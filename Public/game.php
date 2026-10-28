@@ -32,6 +32,20 @@ if ($gameId === false || $gameId === null) {
             "testServer"
         );
 
+        $dbClient = new rabbitMQClient(
+            __DIR__ . '/../testRabbitMQDatabase.ini',
+            'databaseServer'
+        );
+
+        $request = [
+            "type" => "write_rating",
+            "game_id" => $gameId,
+            "username" => $_SESSION["username"],
+            "rating" => $rating,
+            "review" => $review
+        ];
+        
+        $response = $dbClient->send_request($request);
        
         $response = $client->send_request([
             "type" => "getGameDetails",
