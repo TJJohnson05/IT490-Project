@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p><?= count($watchlist) ?> games saved</p>
         <div class="watchlist-grid">
             <?php foreach ($watchlist as $game): ?>
-                <?php echo "<p> $game </p>"; ?>
+                <?php echo "$game" ?>
                 <?php
                     $name = htmlspecialchars(
                         (string)($game ?? 'Unknown Game'),
