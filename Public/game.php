@@ -20,6 +20,17 @@ $gameId = filter_input(
 
 $game = null;
 $errorMessage = "";
+//All community and reveiw related stuff
+$reviewMessage = "";
+$reviewSuccess = false;
+$ratings = [];
+$ratingsError = "";
+$submittedReview = "";
+$submittedRating = "";
+
+if (empty($_SESSION["review_csrf"])) {
+    $_SESSION["review_csrf"] = bin2hex(random_bytes(32));
+}
 
 if ($gameId === false || $gameId === null) {
     $errorMessage = "Invalid game ID.";
@@ -37,16 +48,64 @@ if ($gameId === false || $gameId === null) {
             'databaseServer'
         );
 
-        $request = [
-            "type" => "write_rating",
-            "game_id" => $gameId,
-            "username" => $_SESSION["username"],
-            "rating" => $rating,
-            "review" => $review
-        ];
-        
-        $response = $dbClient->send_request($request);
-       
+        // Only submit a review when the user submits the form.
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $submittedRating = $_POST["rating"] ?? "";
+            $submittedReview = $_POST["review"] ?? "";
+            $rating = filter_var($submittedRating, FILTER_VALIDATE_INT, [
+                "options" => ["min_range" => 1, "max_range" => 5]
+            ]);
+            $username = $_SESSION["username"] ?? $_SESSION["login_name"] ?? null;
+
+            if (!hash_equals($_SESSION["review_csrf"], (string)($_POST["review_csrf"] ?? ""))) {
+                $reviewMessage = "Invalid form token. Refresh the page and try again.";
+            } elseif (!is_string($username) || !preg_match('/^[a-zA-Z0-9_-]{3,30}$/D', $username)) {
+                $reviewMessage = "Please log in again to submit a review.";
+            } elseif ($rating === false || $rating === null || !is_string($submittedReview)
+                || trim($submittedReview) === "" || mb_strlen($submittedReview) > 5000) {
+                $reviewMessage = "Choose a rating from 1 to 5 and enter a review (maximum 5000 characters).";
+            } else {
+                try {
+                    $writeResponse = $dbClient->send_request([
+                        "type" => "write_rating",
+                        "game_id" => $gameId,
+                        "username" => $_SESSION["username"],
+                        "rating" => $rating,
+                        "review" => $submittedReview
+                    ]);
+                    if (is_array($writeResponse) && ($writeResponse["success"] ?? false) === true) {
+                        $reviewSuccess = true;
+                        $reviewMessage = "Your review was submitted successfully.";
+                        $submittedReview = "";
+                        $submittedRating = "";
+                        $_SESSION["review_csrf"] = bin2hex(random_bytes(32));
+                    } else {
+                        $reviewMessage = "The database did not confirm that your review was saved.";
+                    }
+                } catch (Throwable $e) {
+                    error_log("Review submission failed: " . $e->getMessage());
+                    $reviewMessage = "Unable to submit your review right now.";
+                }
+            }
+        }
+
+        // Retrieve reviews for this game directly from the Database VM.
+        try {
+            $ratingsResponse = $dbClient->send_request([
+                "type" => "get_ratings",
+                "game_id" => $gameId
+            ]);
+            if (is_array($ratingsResponse) && ($ratingsResponse["success"] ?? false) === true
+                && is_array($ratingsResponse["ratings"] ?? null)) {
+                $ratings = $ratingsResponse["ratings"];
+            } else {
+                $ratingsError = "Community reviews are unavailable right now.";
+            }
+        } catch (Throwable $e) {
+            error_log("Review lookup failed: " . $e->getMessage());
+            $ratingsError = "Community reviews are unavailable right now.";
+        }
+
         $response = $client->send_request([
             "type" => "getGameDetails",
             "gameId" => $gameId
@@ -301,9 +360,20 @@ if ($gameId === false || $gameId === null) {
             border-radius: 8px;
             font-weight: 600;
             align-self: flex-start;
-            cursor: not-allowed;
-            opacity: 0.65;
+            cursor: pointer;
+            opacity: 1;
         }
+
+        .community-review {
+            padding: 20px;
+            margin-top: 15px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .community-review h3 { margin: 0 0 10px; color: #1d4ed8; }
+        .community-review p { margin: 8px 0; color: #334155; line-height: 1.6; }
 
         .placeholder-text {
             color: #64748b;
@@ -427,48 +497,31 @@ if ($gameId === false || $gameId === null) {
 
             <h2>Rate &amp; Review This Game</h2>
 
-            <p class="placeholder-text">
-                Review STUFF
-            </p>
+            <?php if ($reviewMessage !== ""): ?>
+                <p role="status" style="color: <?php echo $reviewSuccess ? '#166534' : '#b91c1c'; ?>;">
+                    <?php echo escapeHTML($reviewMessage); ?>
+                </p>
+            <?php endif; ?>
 
-            <!--
-            FUTURE RATING/REVIEW STUFF
-            -->
+            <form class="review-form" method="POST" action="game.php?id=<?php echo (int)$gameId; ?>">
+                <input type="hidden" name="review_csrf"
+                       value="<?php echo escapeHTML($_SESSION["review_csrf"]); ?>">
 
-            <form class="review-form">
-
-                <label for="rating">
-                    Your Rating
-                </label>
-
-                <select id="rating" name="rating" disabled>
+                <label for="rating">Your Rating</label>
+                <select id="rating" name="rating" required>
                     <option value="">Select a rating</option>
-                    <option value="5">5 Stars - Excellent</option>
-                    <option value="4">4 Stars - Great</option>
-                    <option value="3">3 Stars - Good</option>
-                    <option value="2">2 Stars - Fair</option>
-                    <option value="1">1 Star - Poor</option>
+                    <?php foreach ([5 => "Excellent", 4 => "Great", 3 => "Good", 2 => "Fair", 1 => "Poor"] as $stars => $label): ?>
+                        <option value="<?php echo $stars; ?>" <?php echo (string)$submittedRating === (string)$stars ? 'selected' : ''; ?>>
+                            <?php echo $stars . ' Stars - ' . $label; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
 
-                <label for="review">
-                    Write Your Review
-                </label>
+                <label for="review">Write Your Review</label>
+                <textarea id="review" name="review" maxlength="5000" required
+                    placeholder="What did you think of this game?"><?php echo escapeHTML(is_string($submittedReview) ? $submittedReview : ''); ?></textarea>
 
-                <textarea
-                    id="review"
-                    name="review"
-                    placeholder="What did you think of this game?"
-                    disabled
-                ></textarea>
-
-                <button
-                    type="button"
-                    class="submit-review"
-                    disabled
-                >
-                    Submit Review
-                </button>
-
+                <button type="submit" class="submit-review">Submit Review</button>
             </form>
 
         </section>
@@ -478,13 +531,20 @@ if ($gameId === false || $gameId === null) {
 
             <h2>Community Reviews</h2>
 
-            <!--
-            MORE REVIEW STUFF
-            -->
-
-            <p class="placeholder-text">
-                No community reviews are available yet.
-            </p>
+            <?php if ($ratingsError !== ""): ?>
+                <p class="placeholder-text"><?php echo escapeHTML($ratingsError); ?></p>
+            <?php elseif (empty($ratings)): ?>
+                <p class="placeholder-text">No community reviews are available yet.</p>
+            <?php else: ?>
+                <?php foreach ($ratings as $rating_full): ?>
+                    <?php if (!is_array($rating_full)) continue; ?>
+                    <div class="community-review">
+                        <h3><?php echo escapeHTML($rating_full["username"] ?? "Unknown user"); ?></h3>
+                        <p><strong>Rating:</strong> <?php echo escapeHTML($rating_full["rating"] ?? "?"); ?>/5</p>
+                        <p><?php echo nl2br(escapeHTML($rating_full["review"] ?? "")); ?></p>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
         </section>
 
