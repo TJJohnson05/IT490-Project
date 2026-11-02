@@ -5,6 +5,7 @@ $username = "";
 $email = "";
 $message = "";
 $messageType = "";
+//Tyler Refer back to IT202 Repo 
 //Start of php validation
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -16,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $hasError = false;
 
-    //Validate Username
+    //Validate Username, empty clause and then character clause 
     
     if ($username == "") {
         $message = "Username must not be empty.";
@@ -29,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hasError = true;
     }
 
-    // validate email
+    // validate email, empty clause and then php @ check 
 
     if ($email === "") {
         $message = "Email must not be empty.";
@@ -42,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hasError = true;
     }
 
-    //validate password
+    //validate password empty and then character limit 
     if ($password === "") {
         $message = "Password must not be empty.";
         $messageType = "danger";
@@ -53,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $hasError = true;
     }
 
-    // Confirm both passwords match 
+    // Password match confirm 
     if ($password !== $confirmPassword) {
         $message = "Passwords do not match.";
         $messageType = "danger";
@@ -62,16 +63,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if (!$hasError) {
 
-        //Meant to connect to RabbitMQ
-        //Backend needs to check whetehr or not username and email already exist 
-        //Backend needs to hash and store password in the database
+        //Connect to RabbitMQ, BE username and email exist check, hash password, store in db, BE needs to hash and store password in the database
 
         try {
             $client = new rabbitMQClient(
                 __DIR__ . "/../testRabbitMQDatabase.ini",
                 "databaseServer"
             );
-
+            //DB request
             $request = [
                 "type" => "register",
                 "username" => $username,
@@ -111,14 +110,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Register</title>
         <link rel="stylesheet" href="css/styles.css">
-        <!--All for responsive design like login page  -->
+        <!--css style  -->
     </head>
 
     <body>
         <?php require(__DIR__ . "/../Partials/Navigation.php"); ?>
         <h2>Register</h2>
 
-        <!-- Display PHP validation messages -->
+        <!--PHP validation messages -->
         <?php if ($message !== ""): ?>
             <div class="<?php echo htmlspecialchars($messageType); ?>" role="status">
                 <?php echo htmlspecialchars($message); ?>
@@ -191,7 +190,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <a href="login.php">Login Here</a>
         </p>
 
-        <!-- JavaScript validation portion -->
+        <!-- JavaScript validation messages -->
          <div id="error-message" role="alert"></div>
 
          <script>
@@ -211,8 +210,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const usernamePattern = /^[a-zA-Z0-9_-]{3,30}$/;
-
-                //remove previous JS messages 
 
                 const errorBox = document.getElementById("error-message")
                 errorBox.textContent = "";

@@ -1,0 +1,63 @@
+.thread-container {
+    max-width: 950px;
+    margin: 40px auto;
+    padding: 20px;
+    color: #f1f5f9;
+}
+
+.thread-container a {
+    color: #93c5fd;
+}
+
+/*Post and reply*/
+.discussion-card,
+.reply-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 25px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+/*Author,category,date*/
+.discussion-meta {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin: 12px 0;
+}
+
+.discussion-body {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.7;
+}
+
+.reply-form {
+    margin-top: 30px;
+}
+
+.reply-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 140px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #64748b;
+    background: #0f172a;
+    color: white;
+    resize: vertical;
+}
+
+.reply-form button {
+    margin-top: 15px;
+    padding: 12px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.thread-error {
+    color: #fca5a5;
+}

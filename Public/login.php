@@ -1,4 +1,5 @@
 <?php
+//Tyler look at IT202 repo 
 session_start();
 require_once __DIR__ . "/../rabbitMQLib.inc";
 
@@ -47,32 +48,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!$hasError) {
 
         try {
-            //connection to rabbitmq 
+            
             $client = new rabbitMQClient(
                 __DIR__ . "/../testRabbitMQDatabase.ini",
                 "databaseServer"
             );
 
-            //login
+            //DB Request 
             $request = [
                 "type" => "login",
                 "username" => $email,
                 "password" => $password
             ];
-            //request needing backend response
             $response = $client->send_request($request);
 
             if ($response === true || $response === 1) {
 
-                // Create a fresh session ID after successful login.
+                //new session ID, session logged in, direct to dashboard
                 session_regenerate_id(true);
-            
-                // Mark this browser session as authenticated.
                 unset($_SESSION["profile_details"], $_SESSION["profile_csrf"]);
                 $_SESSION["logged_in"] = true;
                 $_SESSION["login_name"] = $email;
-            
-                // Redirect to dashboard.
                 header("Location: Dashboard.php");
                 exit;
             
@@ -99,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <title>Login</title>
 
-    <!-- Web page configuration and responsive design -->
+    <!-- Style -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -152,7 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <a href="register.php">Register Here</a>
     </p>
 
-    <!-- JavaScript error messages -->
+    <!-- JavaScript error message and validation -->
     <div id="error-message" role="alert"></div>
 
     <script>

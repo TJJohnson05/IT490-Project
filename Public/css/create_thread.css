@@ -1,0 +1,58 @@
+.create-container {
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 25px;
+    color: #f1f5f9;
+}
+
+.create-container a {
+    color: #93c5fd;
+}
+
+/*Discussion*/
+.create-form {
+    background: #1e293b;
+    border: 1px solid #334155;
+    padding: 30px;
+    border-radius: 12px;
+    margin-top: 20px;
+}
+
+.create-form label {
+    display: block;
+    margin: 15px 0 8px;
+    font-weight: bold;
+}
+
+/*Title and Category*/
+.create-form input,
+.create-form select,
+.create-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    background: #0f172a;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    color: white;
+}
+
+.create-form textarea {
+    min-height: 200px;
+    resize: vertical;
+}
+
+/*Publish*/
+.create-form button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.create-form button:hover {
+    background: #1d4ed8;
+}

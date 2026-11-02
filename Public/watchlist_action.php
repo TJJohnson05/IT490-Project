@@ -1,7 +1,7 @@
 
 <?php
 session_start();
-
+// user logged in check
 if (($_SESSION['logged_in'] ?? false) !== true) {
     header('Location: login.php');
     exit;
@@ -81,18 +81,17 @@ if (
     );
 }
 
-// RabbitMQ dependencies
+// Prof RabbitMq files 
 require_once __DIR__ . '/../path.inc';
 require_once __DIR__ . '/../get_host_info.inc';
 require_once __DIR__ . '/../rabbitMQLib.inc';
 
 try {
-    // Frontend communicates directly with Database VM
     $dbClient = new rabbitMQClient(
         __DIR__ . '/../testRabbitMQDatabase.ini',
         'databaseServer'
     );
-
+    //DB Request
     $response = $dbClient->send_request([
         'type' => 'add_watchlist',
         'username' => $username,

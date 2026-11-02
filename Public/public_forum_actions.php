@@ -1,30 +1,20 @@
-
-
 <?php
-
-
 require_once __DIR__ . '/../Partials/forum_helpers.php';
-
-
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
    http_response_code(405);
    exit('Method not allowed.');
 }
 
-
 // User must be logged in
 $username = forumUser();
-
 
 if ($username === null) {
    forumRedirect('login.php');
 }
 
-
 // Validate CSRF token
 $token = $_POST['csrf_token'] ?? '';
-
 
 if (
    !is_string($token) ||
@@ -34,11 +24,9 @@ if (
    exit('Invalid form token.');
 }
 
-
 // Get submitted action and post body
 $action = $_POST['action'] ?? '';
 $body = trim((string)($_POST['body'] ?? ''));
-
 
 // Limit post size
 if (
@@ -49,21 +37,15 @@ if (
    exit('Post is too long.');
 }
 
-
 try {
-
-
    // CREATE NEW DISCUSSION
    if ($action === 'create') {
 
-
        $title = trim((string)($_POST['title'] ?? ''));
-
 
        $category = (string)(
            $_POST['category'] ?? 'General Discussion'
        );
-
 
        $allowedCategories = [
            'General Discussion',
@@ -71,7 +53,6 @@ try {
            'Help & Tips',
            'News'
        ];
-
 
        if (!in_array($category, $allowedCategories, true)) {
            throw new InvalidArgumentException(
@@ -89,8 +70,7 @@ try {
                'Invalid title or post.'
            );
        }
-
-
+       //DB Request
        $response = forumRequest([
            'type' => 'forum_create_thread',
            'username' => $username,
@@ -99,10 +79,8 @@ try {
            'body' => $body
        ]);
 
-
    // REPLY TO DISCUSSION
    } elseif ($action === 'reply') {
-
 
        $threadId = filter_var(
            $_POST['thread_id'] ?? null,
@@ -110,14 +88,12 @@ try {
            ['options' => ['min_range' => 1]]
        );
 
-
        if (!$threadId || mb_strlen($body) < 1) {
            throw new InvalidArgumentException(
                'Invalid reply.'
            );
        }
-
-
+       //DB Request
        $response = forumRequest([
            'type' => 'forum_add_reply',
            'username' => $username,
@@ -134,8 +110,7 @@ try {
        );
    }
 
-
-   // Verify Database VM response
+   // DB VM Response 
    if (
        !is_array($response) ||
        !($response['success'] ?? false)
@@ -145,23 +120,18 @@ try {
        );
    }
 
-
-   // Redirect to the newly created/updated discussion
+   // Direct to the newly created discussion post 
    forumRedirect(
        'thread.php?id=' . (int)$response['thread_id']
    );
 
-
 } catch (Throwable $e) {
-
 
    error_log(
        'Forum action failed: ' . $e->getMessage()
    );
 
-
    http_response_code(400);
-
 
    echo 'Unable to save your post. Please try again.';
 }

@@ -1,9 +1,10 @@
 <?php
 session_start();
+//Prof files 
 require_once __DIR__ . '/../path.inc';
 require_once __DIR__ . '/../get_host_info.inc';
 require_once __DIR__ . '/../rabbitMQLib.inc';
-
+//User logged in 
 if (($_SESSION["logged_in"] ?? false) !== true) {
     header("Location: login.php");
     exit;
@@ -16,22 +17,18 @@ function searchGamesFromBackend(string $gameName): array
     if ($gameName === "") {
         return [];
     }
-
-    // Connect to the existing RabbitMQ testServer queue
     $client = new rabbitMQClient(
         __DIR__ . '/../testRabbitMQ.ini',
         "testServer"
     );
 
-    // Request game information from backend
+    //BE Request and return said data 
     $request = [
         "type" => "searchGames",
         "gameName" => $gameName
     ];
-
     $response = $client->send_request($request);
 
-    // Check whether the backend returned valid data
     if (!is_array($response)) {
         throw new RuntimeException(
             "Invalid response from backend."
@@ -48,7 +45,7 @@ function searchGamesFromBackend(string $gameName): array
 }
 
 
-// Escape dynamic content before displaying it
+//Prevent code from webpage 
 function escapeHTML($value): string
 {
     return htmlspecialchars(
