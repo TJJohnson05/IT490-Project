@@ -56,3 +56,30 @@ CREATE TABLE watchlists (
   CONSTRAINT fk_watchlist_game_id FOREIGN KEY ('game_id') REFERENCES 'games' ('igdb_id'),
   CONSTRAINT fk_watchlist_username FOREIGN KEY ('username') REFERENCES 'users' ('username')
 );
+
+CREATE TABLE forum_threads (
+    thread_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    game_id INT,
+    title VARCHAR(255),
+    body MEDIUMTEXT,
+    CONSTRAINT fk_thread_user_id
+      FOREIGN KEY (user_id)
+      REFERENCES users (id),
+    CONSTRAINT fk_thread_game_id
+      FOREIGN KEY (game_id)
+      REFERENCES games (igdb_id)
+);
+
+CREATE TABLE forum_replies (
+    reply_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    thread_id INT,
+    body MEDIUMTEXT,
+    CONSTRAINT fk_reply_user_id
+      FOREIGN KEY (user_id)
+      REFERENCES users (id),
+    CONSTRAINT fk_reply_thread_id
+      FOREIGN KEY (thread_id)
+      REFERENCES forum_threads (thread_id)
+);

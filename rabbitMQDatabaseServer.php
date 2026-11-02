@@ -211,6 +211,42 @@ function doGetRatings($game_id)
     }
 }
 
+function doGetThread($thread_id)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $ratings_list = [];
+        $query = "SELECT thread_id, user_id, game_id, review from game_ratings WHERE game_id = ?;";
+        $stmt = $pdo->prepare($query);
+        $exec = $stmt->execute([$game_id]);
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        foreach($result as $row)
+        {
+            $rating_individual = [
+                "game_id" => $row['game_id'],
+                "username" => $row['username'],
+                "rating" => $row['rating'],
+                "review" => $row['review']
+            ];
+            $ratings_list[] = $rating_individual;
+        }
+        $rating_return = [
+            "success" => true,
+            "ratings" => $ratings_list
+        ];
+        return $rating_return;
+
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
 
 function doAddWatchlist($username, $game_id)
 {
@@ -347,6 +383,8 @@ function requestProcessor($request)
           return doGetWatchlist(
               $request["username"]
           );
+      case "forum_get_thread":
+          return doGetThread($request["thread_id"]);
       case "validate_session":
           return false;
 
