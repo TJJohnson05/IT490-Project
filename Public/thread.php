@@ -22,8 +22,8 @@ if (!$threadId) {
             http_response_code(404);
             $error = 'Discussion not found.';
         } else {
-            $thread = $response['thread'];
-            $replies = $response['replies'] ?? [];
+            $thread = $response['thread_info'] ?? null;
+            $replies = $response['thread_replies'] ?? [];
         }
     } catch (Throwable $e) {
         error_log('Thread error: ' . $e->getMessage());
@@ -55,7 +55,7 @@ if (!$threadId) {
             <div class="discussion-meta">
                 Category: <?= forumEscape($thread['category']) ?><br>
                 Posted by: <?= forumEscape($thread['username']) ?><br>
-                Created: <?= forumEscape($thread['created_at']) ?>
+                Updated: <?= forumEscape($thread['updated_at']) ?>
             </div>
             <p class="discussion-body"><?= forumEscape($thread['body']) ?></p>
         </article>
@@ -65,7 +65,7 @@ if (!$threadId) {
             <article class="reply-card">
                 <div class="discussion-meta">
                     <?= forumEscape($reply['username']) ?><br>
-                    <?= forumEscape($reply['created_at']) ?>
+                    <?= forumEscape($reply['updated_at']) ?>
                 </div>
                 <p class="discussion-body"><?= forumEscape($reply['body']) ?></p>
             </article>
@@ -78,7 +78,7 @@ if (!$threadId) {
                 <form method="POST" action="forum_action.php">
                     <input type="hidden" name="csrf_token" value="<?= forumEscape(forumToken()) ?>">
                     <input type="hidden" name="action" value="reply">
-                    <input type="hidden" name="thread_id" value="<?= (int)$thread['id'] ?>">
+                    <input type="hidden" name="thread_id" value="<?= (int)$threadId ?>">
                     <textarea name="body" minlength="1" maxlength="10000" required placeholder="Write your reply..."></textarea>
                     <button type="submit">Post Reply</button>
                 </form>

@@ -71,6 +71,7 @@ try {
            );
        }
        //DB Request
+       error_log
        $response = forumRequest([
            'type' => 'forum_create_thread',
            'username' => $username,
@@ -82,6 +83,7 @@ try {
    // REPLY TO DISCUSSION
    } elseif ($action === 'reply') {
 
+       error_log("Entered Reply");
        $threadId = filter_var(
            $_POST['thread_id'] ?? null,
            FILTER_VALIDATE_INT,
@@ -93,23 +95,22 @@ try {
                'Invalid reply.'
            );
        }
+       error_log("Sending forum_create_reply");
        //DB Request
        $response = forumRequest([
-           'type' => 'forum_add_reply',
+           'type' => 'forum_create_reply',
            'username' => $username,
            'thread_id' => $threadId,
            'body' => $body
        ]);
-
+       error_log("RabbitMQ Response:")
 
    } else {
-
 
        throw new InvalidArgumentException(
            'Invalid forum action.'
        );
    }
-
    // DB VM Response 
    if (
        !is_array($response) ||

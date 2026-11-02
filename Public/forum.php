@@ -20,7 +20,7 @@ try {
         throw new RuntimeException('Unable to load discussions.');
     }
 
-    $threads = $response['threads'] ?? [];
+    $threads = $response['thread_list'] ?? [];
 
 } catch (Throwable $e) {
     error_log('Forum error: ' . $e->getMessage());
@@ -82,7 +82,7 @@ try {
             <article class="thread-card">
 
                 <h2>
-                    <a href="thread.php?id=<?= (int)$thread['id'] ?>">
+                    <a href="thread.php?id=<?= (int)$thread['thread_id'] ?>">
                         <?= forumEscape($thread['title']) ?>
                     </a>
                 </h2>
@@ -90,8 +90,7 @@ try {
                 <div class="thread-info">
                     <p>Category: <?= forumEscape($thread['category']) ?></p>
                     <p>Posted by: <?= forumEscape($thread['username']) ?></p>
-                    <p>Replies: <?= (int)$thread['reply_count'] ?></p>
-                    <p>Created: <?= forumEscape($thread['created_at']) ?></p>
+                    <p>Updated: <?= forumEscape($thread['updated_at']) ?></p>
                 </div>
 
             </article>
