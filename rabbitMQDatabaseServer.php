@@ -337,6 +337,28 @@ function doAddWatchlist($username, $game_id)
     }
 }
 
+function doRemoveWatchlist($username, $game_id)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "DELETE FROM watchlists WHERE username = ? AND game_id = ?";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([$username, $game_id]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
 function doListThreads($search)
 {
 
@@ -404,7 +426,10 @@ function doGetWatchlist($username)
 
             $result2 = $stmt2->fetch(\PDO::FETCH_ASSOC);
             $game_name = $result2['name'];
-            $game_names[] = $game_name;
+            $game_names[] = [
+                'name' => $game_name,
+            'game_id' => $game_id_individual
+            ];
         }
         return ($game_names);
 
@@ -543,6 +568,8 @@ function requestProcessor($request)
           return doGetWatchlist(
               $request["username"]
           );
+      case "remove_watchlist":
+          return doRemoveWatchlist($request['username'], $request['game_id']);
       case "forum_get_thread":
           return doGetThread($request["thread_id"]);
       case "forum_create_thread":
