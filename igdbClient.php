@@ -1,14 +1,13 @@
 <?php
 
-/*
-IT490 ITWorked Yesterday Project
-IGDB APT Integration
-Purpose: This will retrieve video game data from IGDB
-*/
+
+// IGDB APT Integration
+// Will search for games and retreive game details
+
 
 require_once __DIR__. '/igdbAuth.php';
 
-function searchGames($gameName) {
+function searchGames($gameName) {  //function takes game name user would like to lookup
 
     $gameName = trim($gameName);
 
@@ -17,8 +16,8 @@ function searchGames($gameName) {
     }
 
 
-    $gameName = str_replace(["\r", "\n"], " ", $gameName);
-    $gameName = addcslashes($gameName, "\\\"");
+    //$gameName = str_replace(["\r", "\n"], " ", $gameName);
+    $gameName = addcslashes($gameName, "\\\""); 
 
     $query = 'search "' . $gameName . '"; '
            . 'fields name,cover.image_id,first_release_date,rating,summary; '
@@ -35,39 +34,25 @@ function searchGames($gameName) {
     return $games;
 }
 
-if (isset ($_SERVER["SCRIPT_FILENAME"]) && realpath($_SERVER["SCRIPT_FILENAME"]) === __FILE__) {
-
-	try {
-		$gameName = implode(" ", array_slice($argv, 1));
-
-		$games = searchGames($gameName);
-
-		echo json_encode($games, JSON_PRETTY_PRINT) . "\n";
-
-	} catch (Exception $e) {
-		fwrite(STDERR, $e->getMessage() . "\n");
-		exit(1);
-	}
-}
-function getGameDetails(int $gameId): ?array
+function getGameDetails($gameID)
 {
-    if ($gameId <= 0) {
-        throw new InvalidArgumentException("Invalid game ID.");
+    if (!is_numeric($gameID) || $gameID <= 0) {
+        throw new Exception("Invalid game ID.");
     }
 
     // IGDB query for one specific game.
     $query = 'fields name,summary,cover.image_id,'
            . 'first_release_date,rating,genres.name; '
-           . 'where id = ' . $gameId . '; '
+           . 'where id = ' . $gameID . '; '
            . 'limit 1;';
 
-    // Reuse the existing IGDB authentication
+    // this will reuse the existing IGDB authentication
     $response = igdbRequest($query);
 
     $games = json_decode($response, true);
 
     if (!is_array($games)) {
-        throw new RuntimeException("Invalid IGDB response.");
+        throw new Exception("Invalid IGDB response.");
     }
 
     // No game found with the supplied ID.
@@ -77,4 +62,10 @@ function getGameDetails(int $gameId): ?array
 
     return $games[0];
 }
+
+if (isset($argv[1])) {
+	$gameName = $argv[1];
+	$games = searchGames($gameName);
+	print_r($games);
+}	
 ?>

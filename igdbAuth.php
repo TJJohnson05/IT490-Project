@@ -1,11 +1,8 @@
 <?php
-/*
-IT490 ItWorkedYesterday Project
-IGDB Automatic Authentication
-*/
+
+//IGDB Authentication (tokens expired and new ones have to be requested often)
 
 function igdbCredentials() {
-
     $home = getenv("HOME");
 
     if (!$home) {
@@ -14,15 +11,13 @@ function igdbCredentials() {
 
     $file = $home . "/.config/IT490/igdb.ini";
 
-    if (!is_readable($file)) {
+    if (!file_exists($file)) {
         throw new Exception("IGDB credentials file not found.");
     }
 
     $config = parse_ini_file($file);
 
-    if (!$config ||
-        empty($config["client_id"]) ||
-        empty($config["client_secret"])) {
+    if (!$config || empty($config["client_id"]) || empty($config["client_secret"])) {
         throw new Exception("Invalid IGDB credentials.");
     }
 
@@ -31,121 +26,123 @@ function igdbCredentials() {
 
 
 function getIGDBToken($config, $forceNew = false) {
+    $tokenFile = getenv("HOME") . "/.config/IT490/igdb-token.json";
 
-    $cacheFile = getenv("HOME") .
-                 "/.config/IT490/igdb-token.json";
+    if (!$forceNew && file_exists($tokenFile)) {
+	$savedToken = json_decode(file_get_contents($tokenFile), true);
 
-    
-    if (!$forceNew && is_file($cacheFile)) {
-
-        $cached = json_decode(
-            file_get_contents($cacheFile), true
-        );
-
-        if (is_array($cached) &&
-            !empty($cached["access_token"]) &&
-            ($cached["client_id"] ?? "") === $config["client_id"] &&
-            ($cached["expires_at"] ?? 0) > time() + 120) {
-
-            return $cached["access_token"];
-        }
+	if (
+		!empty($savedToken["access_token"]) &&
+		!empty($savedToken["expires_at"]) && 
+		$savedToken["expires_at"] > time()
+	) {
+		return $savedToken["access_token"];
+	}
     }
 
     $ch = curl_init("https://id.twitch.tv/oauth2/token");
 
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST => true,
-        CURLOPT_TIMEOUT => 20,
-        CURLOPT_POSTFIELDS => http_build_query([
-            "client_id" => $config["client_id"],
-            "client_secret" => $config["client_secret"],
-            "grant_type" => "client_credentials"
-        ])
+    $cacheFile = getenv("HOME") .
+                 "/.config/IT490/igdb-token.json";
+
+$postData = http_build_query([
+        "client_id" => $config["client_id"],
+        "client_secret" => $config["client_secret"],
+        "grant_type" => "client_credentials"
     ]);
 
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+
     $response = curl_exec($ch);
-    $error = curl_error($ch);
+
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        throw new Exception("Token request failed: " . $error);
+    }
+
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    if ($response === false || $status !== 200) {
-        throw new Exception(
-            "Twitch token request failed: " .
-            ($error ?: "HTTP " . $status)
-        );
+    if ($status != 200) {
+        throw new Exception("Token request failed. HTTP code: " . $status);
     }
 
     $data = json_decode($response, true);
 
-    if (empty($data["access_token"]) ||
-        empty($data["expires_in"])) {
-        throw new Exception("Invalid Twitch token response.");
+    if (empty($data["access_token"]) || empty($data["expires_in"])) {
+        throw new Exception("Invalid token response.");
     }
 
-    $cache = [
-        "client_id" => $config["client_id"],
+    $saveData = [
         "access_token" => $data["access_token"],
-        "expires_at" => time() + (int)$data["expires_in"]
+        "expires_at" => time() + $data["expires_in"]
     ];
 
-    $temporaryFile = tempnam(dirname($cacheFile), "token-");
-
-    if ($temporaryFile === false) {
-        throw new Exception("Cannot create IGDB token cache.");
-    }
-
-    chmod($temporaryFile, 0600);
-
-    if (file_put_contents(
-        $temporaryFile, json_encode($cache)
-    ) === false || !rename($temporaryFile, $cacheFile)) {
-        @unlink($temporaryFile);
-        throw new Exception("Cannot save IGDB token cache.");
-    }
+    file_put_contents($tokenFile, json_encode($saveData));
 
     return $data["access_token"];
 }
 
 function igdbRequest($query) {
-
     $config = igdbCredentials();
+    $token = getIGDBToken($config);
 
-    for ($attempt = 0; $attempt < 2; $attempt++) {
+    $ch = curl_init("https://api.igdb.com/v4/games");
 
-        $token = getIGDBToken($config, $attempt > 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Client-ID: " . $config["client_id"],
+        "Authorization: Bearer " . $token,
+        "Content-Type: text/plain"
+    ]);
+
+    $response = curl_exec($ch);
+
+    if ($response === false) {
+        $error = curl_error($ch);
+        curl_close($ch);
+        throw new Exception("IGDB request failed: " . $error);
+    }
+
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($status == 401) {
+        $token = getIGDBToken($config, true);
 
         $ch = curl_init("https://api.igdb.com/v4/games");
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_TIMEOUT => 20,
-            CURLOPT_POSTFIELDS => $query,
-            CURLOPT_HTTPHEADER => [
-                "Client-ID: " . $config["client_id"],
-                "Authorization: Bearer " . $token,
-                "Content-Type: text/plain"
-            ]
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Client-ID: " . $config["client_id"],
+            "Authorization: Bearer " . $token,
+            "Content-Type: text/plain"
         ]);
 
         $response = curl_exec($ch);
-        $error = curl_error($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         if ($response === false) {
-            throw new Exception("IGDB connection error: " . $error);
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new Exception("IGDB request failed: " . $error);
         }
 
-        if ($status === 200) {
-            return $response;
-        }
-
-        if ($status !== 401 || $attempt === 1) {
-            throw new Exception("IGDB API Error: HTTP " . $status);
-        }
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
     }
 
-    throw new Exception("IGDB authentication failed.");
+    if ($status != 200) {
+        throw new Exception("IGDB API error. HTTP code: " . $status);
+    }
+
+    return $response;
 }
+
+?>
