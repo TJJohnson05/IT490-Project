@@ -8,6 +8,9 @@ if (($_SESSION['logged_in'] ?? false) !== true) {
     exit;
 }
 require_once __DIR__ . '/../Partials/forum_helpers.php';
+
+$username = $_SESSION['username'] ?? $_SESSION['login_name'] ?? null;
+
 //start off emailnotis
 $emailNotification = true;
 $emailNotificationError = '';
@@ -16,9 +19,13 @@ if ($username !== null) {
     try {
         //DB Request
         $response = forumRequest([
+
             'type' => 'get_email_notification',
             'username' => $username
         ]);
+	error_log("GET EMAIL RESPONSE" . var_export($response, true));
+	$username = $_SESSION['username'] ?? $_SESSION['login_name'] ?? null;
+
         if (is_array($response) &&
         ($response['success'] ?? false)) {
             $emailNotification = (bool)($response['email_notification'] ?? true);
@@ -36,8 +43,6 @@ require_once __DIR__ . '/../Partials/profile_helpers.php';
 require_once __DIR__ . '/../path.inc';
 require_once __DIR__ . '/../get_host_info.inc';
 require_once __DIR__ . '/../rabbitMQLib.inc';
-
-$username = $_SESSION['username'] ?? $_SESSION['login_name'] ?? null;
 
 //Watchlist 
 $watchlist = [];
@@ -218,9 +223,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         to your discussion or when a watchlisted game releases.
     </p>
 
-    <?php if ($emailNotifError !== ''): ?>
+    <?php if ($emailNotificationError !== ''): ?>
         <p>
-            <?= htmlspecialchars($emailNotifError, ENT_QUOTES, 'UTF-8') ?>
+            <?= htmlspecialchars($emailNotificationError, ENT_QUOTES, 'UTF-8') ?>
         </p>
     <?php endif; ?>
     <form action="notification_settings_action.php" method="POST">
@@ -235,12 +240,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 type="checkbox"
                 name="email_notification"
                 value="1"
-                <?= $emailNotif ? 'checked' : '' ?>
+                <?= $emailNotification ? 'checked' : '' ?>
             >
             Enable Email Notifications
         </label>
         <br><br>
-        <button type="submit" <?= $emailNotifError !== '' ? 'disabled' : '' ?>>
+        <button type="submit" <?= $emailNotificationError !== '' ? 'disabled' : '' ?>>
             Save Settings
         </button>
     </form>
