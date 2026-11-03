@@ -7,7 +7,29 @@ if (($_SESSION['logged_in'] ?? false) !== true) {
     header('Location: login.php');
     exit;
 }
+require_once __DIR__ . '/../Partials/forum_helpers.php';
+//start off emailnotis
+$emailNotification = true;
+$emailNotificationError = '';
 
+if ($username !== null) {
+    try {
+        //DB Request
+        $response = forumRequest([
+            'type' => 'get_email_notification',
+            'username' => $username
+        ]);
+        if (is_array($response) &&
+        ($response['success'] ?? false)) {
+            $emailNotification = (bool)($response['email_notification'] ?? true);
+        } else {
+            $emailNotificationError = "Unable to load email Notification settings.";
+        }
+    } catch (Throwable $e) {
+        error_log ('Email Noti Error' . $e->getMessage());
+        $emailNotificationError = "Unable to load email Noti";
+    }
+}
 header('Cache-Control: no-store, private');
 // Prof files 
 require_once __DIR__ . '/../Partials/profile_helpers.php';
@@ -188,7 +210,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php endif; ?>
 </section>
+<!-- Email Notification Settings -->
+<section class="email-settings">
 
+    <h2>Email Notifications</h2>
+
+    <p>
+        Receive email notifications when someone replies
+        to your discussion or when a watchlisted game releases.
+    </p>
+
+    <?php if ($emailNotifError !== ''): ?>
+        <p>
+            <?= htmlspecialchars($emailNotifError, ENT_QUOTES, 'UTF-8') ?>
+        </p>
+    <?php endif; ?>
+
+    <form action="notification_settings_action.php" method="POST">
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="<?= htmlspecialchars(forumToken(), ENT_QUOTES, 'UTF-8') ?>"
+        >
+
+        <label>
+            <input
+                type="checkbox"
+                name="email_notif"
+                value="1"
+                <?= $emailNotif ? 'checked' : '' ?>
+            >
+
+            Enable Email Notifications
+        </label>
+
+        <br><br>
+
+        <button type="submit" <?= $emailNotifError !== '' ? 'disabled' : '' ?>>
+            Save Settings
+        </button>
+
+    </form>
+
+</section>
 <!-- Profile stuff-->
 <main class="profile-page">
 
