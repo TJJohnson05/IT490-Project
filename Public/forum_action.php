@@ -57,7 +57,6 @@ try {
            );
        }
 
-
        if (
            mb_strlen($title) < 5 ||
            mb_strlen($title) > 150 ||

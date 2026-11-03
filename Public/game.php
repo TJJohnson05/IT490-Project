@@ -211,13 +211,10 @@ if ($gameId === false || $gameId === null) {
 <?php require __DIR__ . "/../Partials/Navigation.php"; ?>
 
 <main class="game-page">
-
     <a class="back-link" href="browse.php">
         &larr; Back to Browse Games
     </a>
-
     <?php if ($game === null): ?>
-
         <div class="not-found">
             <h1>Game Unavailable</h1>
             <p>
@@ -226,60 +223,42 @@ if ($gameId === false || $gameId === null) {
                 ); ?>
             </p>
         </div>
-
     <?php else: ?>
-
         <!-- Game info -->
         <div class="game-layout">
-
             <div class="detail-cover">
                 <?php if (!empty($game["cover"])): ?>
-
                     <img
                         src="<?php echo escapeHTML($game["cover"]); ?>"
-                        alt="<?php echo escapeHTML($game["name"]); ?> cover"
-                    >
-
+                        alt="<?php echo escapeHTML($game["name"]); ?> cover">
                 <?php else: ?>
-
                     <?php echo escapeHTML($game["name"]); ?>
-
                 <?php endif; ?>
             </div>
-
             <section class="detail-info">
-
                 <h1>
                     <?php echo escapeHTML($game["name"]); ?>
                 </h1>
-
                 <div class="game-meta">
                     <p>
                         <strong>Release Date:</strong>
                         <?php echo escapeHTML($game["release_date"]); ?>
                     </p>
-
                     <p>
                         <strong>Genre:</strong>
                         <?php echo escapeHTML($game["genre"]); ?>
                     </p>
-
                     <p>
                         <strong>IGDB Rating:</strong>
                         <?php echo escapeHTML($game["rating"]); ?>
                     </p>
                 </div>
-
                 <h2>About This Game</h2>
-
                 <p class="game-description">
                     <?php echo escapeHTML($game["description"]); ?>
                 </p>
-
             </section>
-
         </div>
-
         <!-- Ratings and reviews -->
         <section class="section-card">
 

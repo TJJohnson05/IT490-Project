@@ -48,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!$hasError) {
 
         try {
-            
             $client = new rabbitMQClient(
                 __DIR__ . "/../testRabbitMQDatabase.ini",
                 "databaseServer"
@@ -136,7 +135,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             name="password"
             required
         />
-
         <br><br>
 
         <button type="submit">Log In</button>
