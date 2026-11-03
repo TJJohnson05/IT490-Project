@@ -213,30 +213,49 @@ function doGetRatings($game_id)
 
 function doGetThread($thread_id)
 {
+    echo "we are gonna try to get thread" . PHP_EOL;
     try
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-        $ratings_list = [];
-        $query = "SELECT thread_id, user_id, game_id, review from game_ratings WHERE game_id = ?;";
+        $query = "SELECT thread_id, username, category, title, body, updated_at from forum_threads WHERE thread_id = ?;";
         $stmt = $pdo->prepare($query);
-        $exec = $stmt->execute([$game_id]);
-        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        foreach($result as $row)
-        {
-            $rating_individual = [
-                "game_id" => $row['game_id'],
-                "username" => $row['username'],
-                "rating" => $row['rating'],
-                "review" => $row['review']
-            ];
-            $ratings_list[] = $rating_individual;
-        }
-        $rating_return = [
-            "success" => true,
-            "ratings" => $ratings_list
+        $exec = $stmt->execute([$thread_id]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $thread_info = [
+            "username" => $result['username'],
+            "category" => $result['category'],
+            "title" => $result['title'],
+            "body" => $result['body'],
+            "updated_at" => $result['updated_at']
         ];
-        return $rating_return;
+
+        //get replies
+
+        $query2 = "SELECT * from forum_replies WHERE thread_id = ?;";
+        $stmt2 = $pdo->prepare($query2);
+        $exec2 = $stmt2->execute([$thread_id]);
+        $result2 = $stmt2->fetchAll(\PDO::FETCH_ASSOC);
+        $thread_replies = [];
+        echo "about to check for replies" . PHP_EOL;
+        foreach ($result2 as $row)
+        {
+            $reply_individual = [
+                "reply_id" => $row['reply_id'],
+                "username" => $row['username'],
+                "body" => $row['body'],
+                "updated_at" => $row['updated_at']
+            ];
+            $thread_replies[] = $reply_individual;
+        }
+        echo "creating the return" . PHP_EOL;
+        $thread_return = [
+            "success" => true,
+            "thread_info" => $thread_info,
+            "thread_replies" => $thread_replies
+        ];
+        echo "returning the get thread" . PHP_EOL;
+        return $thread_return;
 
 
     } catch (PDOException $e) {
@@ -245,6 +264,52 @@ function doGetThread($thread_id)
         echo "Failed to connect to MYSQL" . PHP_EOL;
         return false;
         //return false if not valid
+    }
+}
+
+function doWriteThread($username, $category, $title, $body)
+{
+
+    echo "we are gonna try to write thread" . PHP_EOL;
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "INSERT INTO forum_threads (username, category, title, body) VALUES (?, ?, ?, ?)";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([$username, $category, $title, $body]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+    }
+}
+
+function doWriteReply($username, $thread_id, $body)
+{
+
+    echo "we are gonna try to write a reply" . PHP_EOL;
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "INSERT INTO forum_replies (username, thread_id, body) VALUES (?, ?, ?)";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([$username, $thread_id, $body]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
     }
 }
 
@@ -260,6 +325,49 @@ function doAddWatchlist($username, $game_id)
         echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
 
         return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
+function doListThreads($search)
+{
+
+    echo "we are gonna try to list threads" . PHP_EOL;
+    echo "the search value is " . $search . PHP_EOL;
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "SELECT * from forum_threads WHERE title LIKE CONCAT('%', ?, '%');";
+        $stmt = $pdo->prepare($query);
+        $exec = $stmt->execute([$search]);
+        $result = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $thread_list = [];
+        foreach($result as $row)
+        {
+            echo "found thread named " . $row['title'] . PHP_EOL;
+            $thread_individual = [
+                "thread_id" => $row['thread_id'],
+                "title" => $row['title'],
+                "username" => $row['username'],
+                "category" => $row['category'],
+                "updated_at" => $row['updated_at']
+            ];
+            $thread_list[] = $thread_individual;
+        }
+
+        $thread_return = [
+            "success" => true,
+            "thread_list" => $thread_list,
+        ];
+        return $thread_return;
+
 
     } catch (PDOException $e) {
         error_log("Database connection error: " . $e->getMessage());
@@ -385,6 +493,21 @@ function requestProcessor($request)
           );
       case "forum_get_thread":
           return doGetThread($request["thread_id"]);
+      case "forum_create_thread":
+          return doWriteThread(
+              $request["username"],
+              $request["category"],
+              $request["title"],
+              $request["body"]
+          );
+
+      case "forum_list_threads":
+          return doListThreads(
+              $request["search"]
+        );
+      case "forum_create_reply":
+          echo "case is forum_create_reply" . PHP_EOL;
+          return doWriteReply($request['username'], $request['thread_id'], $request['body']);
       case "validate_session":
           return false;
 

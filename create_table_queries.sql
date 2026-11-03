@@ -59,13 +59,13 @@ CREATE TABLE watchlists (
 
 CREATE TABLE forum_threads (
     thread_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    username VARCHAR(30),
     game_id INT,
     title VARCHAR(255),
     body MEDIUMTEXT,
-    CONSTRAINT fk_thread_user_id
-      FOREIGN KEY (user_id)
-      REFERENCES users (id),
+    CONSTRAINT fk_thread_username
+      FOREIGN KEY (username)
+      REFERENCES users (username),
     CONSTRAINT fk_thread_game_id
       FOREIGN KEY (game_id)
       REFERENCES games (igdb_id)
@@ -73,12 +73,12 @@ CREATE TABLE forum_threads (
 
 CREATE TABLE forum_replies (
     reply_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    username VARCHAR(30),
     thread_id INT,
     body MEDIUMTEXT,
-    CONSTRAINT fk_reply_user_id
-      FOREIGN KEY (user_id)
-      REFERENCES users (id),
+    CONSTRAINT fk_reply_username
+      FOREIGN KEY (username)
+      REFERENCES users (username),
     CONSTRAINT fk_reply_thread_id
       FOREIGN KEY (thread_id)
       REFERENCES forum_threads (thread_id)
