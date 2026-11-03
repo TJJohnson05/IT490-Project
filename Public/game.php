@@ -109,6 +109,9 @@ if ($gameId === false || $gameId === null) {
             "gameId" => $gameId
         ]);
 
+	error_log("Game ID requested: " . $gameId);
+	error_log("Backend response: " . print_r($response, true));
+
         if (!is_array($response)) {
             throw new RuntimeException("Invalid backend response.");
         }
