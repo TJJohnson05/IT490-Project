@@ -7,6 +7,7 @@ require_once('rabbitMQLib.inc');
 require_once __DIR__ . "/database.php";
 require_once __DIR__ . "/profile_handlers.php";
 
+
 function doLogin($username,$password)
 {
     // lookup username in databas
@@ -155,6 +156,7 @@ function doUpdateDB($games)
 
 function doWriteRating($game_id, $username, $rating, $review)
 {
+    echo "writing new rating" . PHP_EOL;
     try
     {
         $pdo = getDatabaseConnection();
@@ -384,7 +386,7 @@ function doGetWatchlist($username)
     {
         $pdo = getDatabaseConnection();
         echo "Connected to MySQL db." . PHP_EOL;
-
+        echo "Getting watchlist for "  . $username . PHP_EOL;
         $game_names = [];
         $query = "SELECT game_id from watchlists WHERE username = ?";
         $stmt = $pdo->prepare($query);
@@ -405,6 +407,56 @@ function doGetWatchlist($username)
             $game_names[] = $game_name;
         }
         return ($game_names);
+
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
+function doUpdateEmailNotification($username, $email_notif)
+{
+    try
+    {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        $query = "UPDATE users SET email_notif = ? WHERE username = ?;";
+        $stmt = $pdo->prepare($query);
+        $result = $stmt->execute([(int)$email_notif, $username]);
+        echo "The result of the query is: " . $result["IT490"] . PHP_EOL;
+        echo "Updated email notifs for user " . $username . " to " . $email_notif . PHP_EOL;
+        echo "Updated email notif" . PHP_EOL;
+        return true;
+
+    } catch (PDOException $e) {
+        error_log("Database connection error: " . $e->getMessage());
+
+        echo "Failed to connect to MYSQL" . PHP_EOL;
+        return false;
+        //return false if not valid
+    }
+}
+
+function doGetEmailNotification($username)
+{
+    try {
+        $pdo = getDatabaseConnection();
+        echo "Connected to MySQL db." . PHP_EOL;
+        echo "getting email notification for "  . $username . PHP_EOL;
+        $game_names = [];
+        $query = "SELECT email_notif from users WHERE username = ?";
+        $stmt = $pdo->prepare($query);
+        $exec = $stmt->execute([$username]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+        $result_return = [
+            "success" => true,
+            "email_notification" => $result['email_notif']
+        ];
+        return($result_return);
 
 
     } catch (PDOException $e) {
@@ -508,6 +560,11 @@ function requestProcessor($request)
       case "forum_create_reply":
           echo "case is forum_create_reply" . PHP_EOL;
           return doWriteReply($request['username'], $request['thread_id'], $request['body']);
+      case "get_email_notification":
+          return doGetEmailNotification($request['username']);
+      case "update_email_notification":
+          echo "receiving email notif update request" . PHP_EOL;
+          return doUpdateEmailNotification($request['username'], $request['email_notif']);
       case "validate_session":
           return false;
 
