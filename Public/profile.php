@@ -48,6 +48,7 @@ require_once __DIR__ . '/../rabbitMQLib.inc';
 $watchlist = [];
 $watchlistError = '';
 
+$_SESSION['watchlist_csrf'] ??= bin2hex(random_bytes(32));
 if (empty($username)) {
     $watchlistError = 'Unable to identify the logged-in user.';
 } else {
@@ -177,42 +178,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
 <?php require __DIR__ . '/../Partials/Navigation.php'; ?>
-
 <!-- Watchlist stuff-->
 <section class="profile-watchlist">
     <h2>My Watchlist</h2>
-
     <?php if ($watchlistError !== ''): ?>
-
         <p><?= htmlspecialchars($watchlistError) ?></p>
-
     <?php elseif (empty($watchlist)): ?>
-
         <p>You haven't added any games yet.</p>
         <a href="browse.php">Browse Games</a>
-
     <?php else: ?>
-
         <p><?= count($watchlist) ?> games saved</p>
-
         <div class="watchlist-grid">
-
             <?php foreach ($watchlist as $game): ?>
-
                 <?php
                 $gameName = is_array($game)
                     ? ($game['name'] ?? $game['game_name'] ?? $game['game_id'] ?? 'Unknown Game')
                     : $game;
                 ?>
+                    <div class="watchlist-card">
 
-                <div class="watchlist-card">
-                    <h3><?= htmlspecialchars((string)$gameName, ENT_QUOTES, 'UTF-8') ?></h3>
-                </div>
+                        <h3>
+                            <?= htmlspecialchars((string)$gameName, ENT_QUOTES, 'UTF-8') ?>
+                        </h3>
 
+                        <?php
+                        $gameId = is_array($game)
+                            ? ($game['igdb_id'] ?? $game['game_id'] ?? null)
+                            : null;
+                        ?>
+
+                        <?php if (filter_var($gameId, FILTER_VALIDATE_INT, [
+                            'options' => ['min_range' => 1]
+                        ]) !== false): ?>
+
+                        <form action="watchlist_action.php" method="POST">
+
+                        <input type="hidden"
+                            name="csrf_token"
+                            value="<?= htmlspecialchars($_SESSION['watchlist_csrf'], ENT_QUOTES, 'UTF-8') ?>">
+
+                        <input type="hidden" name="action" value="remove">
+
+                        <input type="hidden"
+                            name="game_igdb_id"
+                            value="<?= (int)$gameId ?>">
+
+                        <button type="submit">
+                            Remove from Watchlist
+                        </button>
+
+                        </form>
+                        <?php endif; ?>
+                    </div>
             <?php endforeach; ?>
-
         </div>
-
     <?php endif; ?>
 </section>
 <!-- Email Notification Settings -->
