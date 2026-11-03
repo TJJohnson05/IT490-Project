@@ -29,7 +29,6 @@ if (
 $emailNotif = isset($_POST['email_notification']);
 
 try {
-
     //DB Request
     $response = forumRequest([
         'type' => 'update_email_notification',
@@ -37,14 +36,9 @@ try {
         'email_notif' => $emailNotif
     ]);
     
-    if (
-        !is_array($response) ||
-        !($response['success'] ?? false)
-    ) {
-        throw new RuntimeException(
-            'Database rejected email notification update.'
-        );
-    }
+    if ($response !== true) {
+	throw new RuntimeException('Database rejected email noti update');
+	}
     forumRedirect('profile.php');
 
 } catch (Throwable $e) {
