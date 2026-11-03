@@ -84,8 +84,8 @@ form input[type="password"] {
     margin-bottom: 15px;
     border: 1px solid #475569;
     border-radius: 6px;
-    background-color: #0f172a;
-    color: white;
+    background-color: white;
+    color: black;
     font-size: 15px;
 }
 

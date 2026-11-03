@@ -1,7 +1,8 @@
 
 <?php
 session_start();
-// user logged in check
+
+// User logged in check
 if (($_SESSION['logged_in'] ?? false) !== true) {
     header('Location: login.php');
     exit;
@@ -23,10 +24,21 @@ if (mb_strlen($search) > 100) {
     $search = '';
 }
 
-$redirect = 'browse.php?' . http_build_query([
-    'search' => $search,
-    'sort' => $sort
-]);
+//We adding or removing
+$action = $_POST['action'] ?? 'add';
+//Return to profile if remove, return to browse if add
+if ($action === 'remove') {
+    $redirect = 'profile.php';
+} elseif ($action === 'add') {
+    $redirect = 'browse.php?' . http_build_query([
+        'search' => $search,
+        'sort' => $sort
+    ]);
+
+} else {
+    http_response_code(400);
+    exit('Invalid watchlist action.');
+}
 
 function finishWatchlist(
     bool $success,
@@ -81,42 +93,60 @@ if (
     );
 }
 
-// Prof RabbitMq files 
+// RabbitMQ files
 require_once __DIR__ . '/../path.inc';
 require_once __DIR__ . '/../get_host_info.inc';
 require_once __DIR__ . '/../rabbitMQLib.inc';
 
 try {
+
     $dbClient = new rabbitMQClient(
         __DIR__ . '/../testRabbitMQDatabase.ini',
         'databaseServer'
     );
-    //DB Request
-    $response = $dbClient->send_request([
-        'type' => 'add_watchlist',
-        'username' => $username,
-        'game_id' => $gameId
-    ]);
 
-    if (
-        $response === true
-    ) {
-        finishWatchlist(
-            true,
-            'Game added to your watchlist!',
-            $redirect
-        );
+    //DB Request
+    if ($action === 'remove') {
+        $response = $dbClient->send_request([
+            'type' => 'remove_watchlist',
+            'username' => $username,
+            'game_id' => $gameId
+        ]);
+    } else {
+        $response = $dbClient->send_request([
+            'type' => 'add_watchlist',
+            'username' => $username,
+            'game_id' => $gameId
+        ]);
+    }
+    //DB response
+    if ($response === true) {
+        if ($action === 'remove') {
+            finishWatchlist(
+                true,
+                'Game removed from your watchlist!',
+                $redirect
+            );
+        } else {
+            finishWatchlist(
+                true,
+                'Game added to your watchlist!',
+                $redirect
+            );
+        }
     }
 
     finishWatchlist(
         false,
-        'Could not add game to watchlist. The database may not support this request yet.',
+        'Could not update your watchlist.',
         $redirect
     );
 
 } catch (Throwable $e) {
-    error_log('Watchlist add failed: ' . $e->getMessage());
 
+    error_log(
+        'Watchlist action failed: ' . $e->getMessage()
+    );
     finishWatchlist(
         false,
         'Unable to contact the watchlist service.',
