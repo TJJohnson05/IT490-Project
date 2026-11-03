@@ -71,7 +71,7 @@ try {
            );
        }
        //DB Request
-       error_log
+       error_log("sending forum create thread");
        $response = forumRequest([
            'type' => 'forum_create_thread',
            'username' => $username,
@@ -103,7 +103,7 @@ try {
            'thread_id' => $threadId,
            'body' => $body
        ]);
-       error_log("RabbitMQ Response:")
+       error_log("RabbitMQ Response:");
 
    } else {
 
@@ -113,8 +113,8 @@ try {
    }
    // DB VM Response 
    if (
-       !is_array($response) ||
-       !($response['success'] ?? false)
+       $response !== true &&
+       (!is_array($response) || !($response['success'] ?? false))
    ) {
        throw new RuntimeException(
            'Database rejected forum request.'
@@ -122,9 +122,10 @@ try {
    }
 
    // Direct to the newly created discussion post 
-   forumRedirect(
-       'thread.php?id=' . (int)$response['thread_id']
-   );
+if ($action === 'reply') {
+   forumRedirect( 'thread.php?id=' . $threadId);
+}
+   forumRedirect('thread.php?id=' . (int)$response['thread_id'] );
 
 } catch (Throwable $e) {
 
