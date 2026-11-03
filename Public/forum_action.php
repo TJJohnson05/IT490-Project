@@ -1,19 +1,18 @@
 <?php
 require_once __DIR__ . '/../Partials/forum_helpers.php';
-// Only accept POST requests
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
    http_response_code(405);
    exit('Method not allowed.');
 }
 
-// User must be logged in
+//user loggedin
 $username = forumUser();
 
 if ($username === null) {
    forumRedirect('login.php');
 }
 
-// Validate CSRF token
 $token = $_POST['csrf_token'] ?? '';
 
 if (
@@ -24,11 +23,9 @@ if (
    exit('Invalid form token.');
 }
 
-// Get submitted action and post body
 $action = $_POST['action'] ?? '';
 $body = trim((string)($_POST['body'] ?? ''));
 
-// Limit post size
 if (
    strlen($body) > 30000 ||
    mb_strlen($body) > 10000
@@ -38,7 +35,7 @@ if (
 }
 
 try {
-   // CREATE NEW DISCUSSION
+   //Discussion 
    if ($action === 'create') {
 
        $title = trim((string)($_POST['title'] ?? ''));
@@ -80,7 +77,7 @@ try {
            'body' => $body
        ]);
 
-   // REPLY TO DISCUSSION
+   //Discussion reply
    } elseif ($action === 'reply') {
 
        error_log("Entered Reply");
@@ -111,7 +108,7 @@ try {
            'Invalid forum action.'
        );
    }
-   // DB VM Response 
+   //Db response 
    if (
        $response !== true &&
        (!is_array($response) || !($response['success'] ?? false))
@@ -121,7 +118,7 @@ try {
        );
    }
 
-   // Direct to the newly created discussion post 
+   //Redirect
 if ($action === 'reply') {
    forumRedirect( 'thread.php?id=' . $threadId);
 }

@@ -212,9 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </section>
 <!-- Email Notification Settings -->
 <section class="email-settings">
-
     <h2>Email Notifications</h2>
-
     <p>
         Receive email notifications when someone replies
         to your discussion or when a watchlisted game releases.
@@ -225,7 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?= htmlspecialchars($emailNotifError, ENT_QUOTES, 'UTF-8') ?>
         </p>
     <?php endif; ?>
-
     <form action="notification_settings_action.php" method="POST">
 
         <input
@@ -233,26 +230,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             name="csrf_token"
             value="<?= htmlspecialchars(forumToken(), ENT_QUOTES, 'UTF-8') ?>"
         >
-
         <label>
             <input
                 type="checkbox"
-                name="email_notif"
+                name="email_notification"
                 value="1"
                 <?= $emailNotif ? 'checked' : '' ?>
             >
-
             Enable Email Notifications
         </label>
-
         <br><br>
-
         <button type="submit" <?= $emailNotifError !== '' ? 'disabled' : '' ?>>
             Save Settings
         </button>
-
     </form>
-
 </section>
 <!-- Profile stuff-->
 <main class="profile-page">
