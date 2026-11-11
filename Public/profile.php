@@ -351,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                name="current_password"
                autocomplete="current-password" required>
 
-        <label for="new-password">New password (8-72 bytes)</label>
+        <label for="new-password">New password (8-72 characters)</label>
         <input id="new-password" type="password" name="new_password"
                minlength="8" maxlength="72"
                autocomplete="new-password" required>
