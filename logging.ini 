@@ -1,0 +1,10 @@
+[loggingServer]
+BROKER_HOST = 100.115.185.18
+BROKER_PORT = 5672
+USER = test
+PASSWORD = test
+VHOST = testHost
+EXCHANGE = loggingExchange
+QUEUE = frontendLogs
+EXCHANGE_TYPE = fanout
+AUTO_DELETE = false
